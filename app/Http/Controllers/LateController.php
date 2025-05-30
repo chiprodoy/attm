@@ -10,6 +10,9 @@ class LateController extends Controller
 {
     //
     public function index($startDate){
-        //AttLog::whereRaw('DATE(CHECKTIME)='.$startDate);
+        $data=AttLog::whereRaw('DATE(CHECKTIME)='.$startDate);
+        foreach($data as $key => $val){
+
+        }
     }
 }

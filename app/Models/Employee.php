@@ -12,7 +12,7 @@ class Employee extends Model
 
     protected $connection = 'attdb'; // Use default connection
 
-    protected $table = 'userinfo'; // Use default connection
+    protected $table = 'userinfo';
 
     /**
      * The primary key for the model.
@@ -21,7 +21,9 @@ class Employee extends Model
      */
     protected $primaryKey = 'USERID';
 
-    public function getWorkSchedule(){
+
+
+    public function getCheckType(){
         $data = DB::connection('attdb')->table('user_of_run')
             ->join('num_run','num_run.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
             ->join('num_run_deil','num_run_deil.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
