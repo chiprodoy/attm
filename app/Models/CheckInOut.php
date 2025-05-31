@@ -35,6 +35,17 @@ class CheckInOut extends Model
 
         return $data;
     }
+
+    public function getCurrentWorkSchedule($date){
+        $data = DB::connection('attdb')->table('user_of_run')
+            ->join('num_run','num_run.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
+            ->join('num_run_deil','num_run_deil.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
+            ->where('USERID',$this->USERID)
+             ->whereRaw("MOD(DATEDIFF('".$date."', num_run.STARTDATE), IF(num_run.UNITS=1,7,num_run.UNITS) ) BETWEEN SDAYS AND EDAYS")
+            ->get();
+
+        return $data;
+    }
     static function readCheckInOutData($date){
 
         // $date= Carbon::parse($date);

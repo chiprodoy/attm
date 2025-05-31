@@ -47,7 +47,7 @@ class SyncAttLogCommand extends Command
         $checkInOutData = $this->readCheckInOutData($this->startDate);
 
         foreach($checkInOutData as $key => $val){
-            dd($val->getWorkSchedule());
+            dd($val->getCurrentWorkSchedule($this->startDate));
             // $this->setAttLogTable($val->USERID,
             // $val->CHECKTIME,
             // $attCheckType,
