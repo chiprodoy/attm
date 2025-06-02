@@ -36,13 +36,15 @@ class CheckInOut extends Model
         return $data;
     }
 
-    public function getCurrentWorkSchedule($date){
+    public function getCurrentWorkSchedule(){
         $data = DB::connection('attdb')->table('user_of_run')
             ->join('num_run','num_run.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
             ->join('num_run_deil','num_run_deil.NUM_RUNID','=','user_of_run.NUM_OF_RUN_ID')
+            ->join('schclass','schclass.schClassid','=','num_run_deil.SCHCLASSID')
             ->where('USERID',$this->USERID)
-             ->whereRaw("MOD(DATEDIFF('".$date."', num_run.STARTDATE), IF(num_run.UNITS=1,7,num_run.UNITS) ) BETWEEN SDAYS AND EDAYS")
-            ->get();
+            ->where('num_run.ENDDATE','>=',$this->CHECKTIME)
+            ->whereRaw("MOD(DATEDIFF('".$this->CHECKTIME."', num_run.STARTDATE), IF(num_run.UNITS=1,7,num_run.CYLE) ) BETWEEN SDAYS AND EDAYS")
+            ->first();
 
         return $data;
     }

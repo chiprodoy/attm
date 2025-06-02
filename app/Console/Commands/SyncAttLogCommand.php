@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\AttLog;
 use App\Models\CheckInOut;
+use App\Models\CheckType;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -47,7 +48,17 @@ class SyncAttLogCommand extends Command
         $checkInOutData = $this->readCheckInOutData($this->startDate);
 
         foreach($checkInOutData as $key => $val){
-            dd($val->getCurrentWorkSchedule($this->startDate));
+            $workSchedule = $val->getCurrentWorkSchedule();
+            $attCheckType = $this->setCheckType($val,$workSchedule);
+            // cari jumlah cepat atau jumlah lambat
+            //jika check type in maka cari jumlah telat
+            //jika check type out maka cari jumlah pulang cepat
+            if($attCheckType == CheckType::IN){
+
+            }
+
+            dd($attCheckType);
+            dd($val->getCurrentWorkSchedule());
             // $this->setAttLogTable($val->USERID,
             // $val->CHECKTIME,
             // $attCheckType,
@@ -69,6 +80,27 @@ class SyncAttLogCommand extends Command
         }
 
     }
+
+    private function setCheckType($checkLog,$workSchedule){
+
+            $ct = Carbon::parse($checkLog->CHECKTIME);
+
+            $t1 = Carbon::parse($workSchedule->CheckInTime1);
+            $t1->setDate($ct->year,$ct->month,$ct->day);
+
+            $t2 = Carbon::parse($checkLog->CheckInTime2);
+            $t2->setDate($ct->year,$ct->month,$ct->day);
+
+
+            // cek apakah di range waktu masuk
+            if(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckInTime2)->format('His.u') || Carbon::parse($val->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckInTime2)->format('His.u')){
+                $attCheckType = CheckType::IN;
+            }elseif(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u') || Carbon::parse($val->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u')){
+                $attCheckType = CheckType::IN;
+            }
+            return $attCheckType;
+    }
+
     private function readCheckInOutData($date){
 
         $date= Carbon::parse($date);
