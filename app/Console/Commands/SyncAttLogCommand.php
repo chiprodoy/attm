@@ -54,7 +54,15 @@ class SyncAttLogCommand extends Command
             //jika check type in maka cari jumlah telat
             //jika check type out maka cari jumlah pulang cepat
             if($attCheckType == CheckType::IN){
+                $ct = Carbon::parse($val->CHECKTIME);
 
+                $tIn1 = Carbon::parse($workSchedule->STARTTIME);
+                $tIn1->setDate($ct->year,$ct->month,$ct->day);
+
+                $lateAmount = $ct->diffInMinutes($tIn1);
+                echo $lateAmount;
+
+                dd($val);
             }
 
             dd($attCheckType);
@@ -93,9 +101,9 @@ class SyncAttLogCommand extends Command
 
 
             // cek apakah di range waktu masuk
-            if(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckInTime2)->format('His.u') || Carbon::parse($val->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckInTime2)->format('His.u')){
+            if(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckInTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckInTime2)->format('His.u')){
                 $attCheckType = CheckType::IN;
-            }elseif(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u') || Carbon::parse($val->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u')){
+            }elseif(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u')){
                 $attCheckType = CheckType::IN;
             }
             return $attCheckType;
