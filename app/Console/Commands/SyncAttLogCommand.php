@@ -53,20 +53,11 @@ class SyncAttLogCommand extends Command
             // cari jumlah cepat atau jumlah lambat
             //jika check type in maka cari jumlah telat
             //jika check type out maka cari jumlah pulang cepat
-            if($attCheckType == CheckType::IN){
-                $ct = Carbon::parse($val->CHECKTIME);
-
-                $tIn1 = Carbon::parse($workSchedule->STARTTIME);
-                $tIn1->setDate($ct->year,$ct->month,$ct->day);
-
-                $lateAmount = $ct->diffInMinutes($tIn1);
-                echo $lateAmount;
-
-                dd($val);
-            }
-
+            $this->hitungPresensi($val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
+            if($key==10){
             dd($attCheckType);
             dd($val->getCurrentWorkSchedule());
+            }
             // $this->setAttLogTable($val->USERID,
             // $val->CHECKTIME,
             // $attCheckType,
@@ -135,6 +126,63 @@ class SyncAttLogCommand extends Command
         ]);
     }
 
+    function hitungPresensi($presensiDatetimeStr, $shiftStartDateStr,$matchedShift)
+    {
+
+        // Tanggal awal shift dan tanggal presensi
+        $startShift = new \DateTime($shiftStartDateStr);
+        $presensi = new \DateTime($presensiDatetimeStr);
+
+        $daysDiff = $startShift->diff($presensi)->days;
+
+        // Jika SDAYS dimulai dari 0
+        $sdaysToday = $daysDiff % 12;
+
+        if (!$matchedShift) {
+            echo "Shift tidak ditemukan untuk SDAYS = $sdaysToday\n";
+            return;
+        }
+
+        // Bangun waktu shift berdasarkan tanggal presensi
+        $shiftMasuk = new \DateTime($presensi->format('Y-m-d') . ' ' . date('H:i:s', strtotime($matchedShift->STARTTIME)));
+        $shiftPulang = new \DateTime($presensi->format('Y-m-d') . ' ' . date('H:i:s', strtotime($matchedShift->ENDTIME)));
+
+        if ($shiftPulang < $shiftMasuk) {
+            $shiftPulang->modify('+1 day');
+        }
+
+        $lateMinutes = (int)$matchedShift->LateMinutes;
+        $earlyMinutes = (int)$matchedShift->EarlyMinutes;
+
+        $maxToleransiMasuk = clone $shiftMasuk;
+        $maxToleransiMasuk->modify("+$lateMinutes minutes");
+
+        $minToleransiPulang = clone $shiftPulang;
+        $minToleransiPulang->modify("-$earlyMinutes minutes");
+
+        echo "Presensi: {$presensi->format('Y-m-d H:i:s')}\n";
+        echo "Shift Masuk: {$shiftMasuk->format('H:i')} | Pulang: {$shiftPulang->format('H:i')}\n";
+
+        if ($presensi <= $maxToleransiMasuk) {
+            echo "➡️ Presensi Masuk: ";
+            if ($presensi > $shiftMasuk) {
+                $late = round(($presensi->getTimestamp() - $shiftMasuk->getTimestamp()) / 60);
+                echo "Terlambat $late menit.\n";
+            } else {
+                echo "Tepat waktu.\n";
+            }
+        } elseif ($presensi >= $shiftPulang) {
+            echo "➡️ Presensi Pulang: ";
+            if ($presensi < $minToleransiPulang) {
+                $early = round(($minToleransiPulang->getTimestamp() - $presensi->getTimestamp()) / 60);
+                echo "Pulang cepat $early menit.\n";
+            } else {
+                echo "Tepat waktu.\n";
+            }
+        } else {
+            echo "Presensi di tengah shift, tidak bisa dipastikan masuk atau pulang.\n";
+        }
+    }
     private function getEmployeeCheckType($userID,$dateTime){
 
     }
