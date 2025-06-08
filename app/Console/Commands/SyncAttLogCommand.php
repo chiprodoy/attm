@@ -7,6 +7,7 @@ use App\Models\CheckInOut;
 use App\Models\CheckType;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class SyncAttLogCommand extends Command
 {
@@ -49,15 +50,23 @@ class SyncAttLogCommand extends Command
 
         foreach($checkInOutData as $key => $val){
             $workSchedule = $val->getCurrentWorkSchedule();
+
             $attCheckType = $this->setCheckType($val,$workSchedule);
             // cari jumlah cepat atau jumlah lambat
             //jika check type in maka cari jumlah telat
             //jika check type out maka cari jumlah pulang cepat
-            $this->hitungPresensi($val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
-            if($key==10){
-            dd($attCheckType);
-            dd($val->getCurrentWorkSchedule());
+            if($workSchedule){
+                $result = $this->hitungPresensi($val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
+
+                if($result['Presensi']=='Masuk' && $result['late'] > 0){
+                    print_r($result);
+
+                }
+            }else{
+                info('jadwal tidak ditemukan');
             }
+
+
             // $this->setAttLogTable($val->USERID,
             // $val->CHECKTIME,
             // $attCheckType,
@@ -81,21 +90,25 @@ class SyncAttLogCommand extends Command
     }
 
     private function setCheckType($checkLog,$workSchedule){
+            $attCheckType = null;
 
-            $ct = Carbon::parse($checkLog->CHECKTIME);
+            if($workSchedule){
 
-            $t1 = Carbon::parse($workSchedule->CheckInTime1);
-            $t1->setDate($ct->year,$ct->month,$ct->day);
+                $ct = Carbon::parse($checkLog->CHECKTIME);
 
-            $t2 = Carbon::parse($checkLog->CheckInTime2);
-            $t2->setDate($ct->year,$ct->month,$ct->day);
+                $t1 = Carbon::parse($workSchedule->CheckInTime1);
+                $t1->setDate($ct->year,$ct->month,$ct->day);
+
+                $t2 = Carbon::parse($checkLog->CheckInTime2);
+                $t2->setDate($ct->year,$ct->month,$ct->day);
 
 
-            // cek apakah di range waktu masuk
-            if(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckInTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckInTime2)->format('His.u')){
-                $attCheckType = CheckType::IN;
-            }elseif(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u')){
-                $attCheckType = CheckType::IN;
+                // cek apakah di range waktu masuk
+                if(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckInTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckInTime2)->format('His.u')){
+                    $attCheckType = CheckType::IN;
+                }elseif(Carbon::parse($checkLog->CHECKTIME)->format('His.u') <= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u') || Carbon::parse($checkLog->CHECKTIME)->format('His.u') >= Carbon::parse($workSchedule->CheckOutTime2)->format('His.u')){
+                    $attCheckType = CheckType::IN;
+                }
             }
             return $attCheckType;
     }
@@ -129,58 +142,93 @@ class SyncAttLogCommand extends Command
     function hitungPresensi($presensiDatetimeStr, $shiftStartDateStr,$matchedShift)
     {
 
-        // Tanggal awal shift dan tanggal presensi
-        $startShift = new \DateTime($shiftStartDateStr);
-        $presensi = new \DateTime($presensiDatetimeStr);
-
-        $daysDiff = $startShift->diff($presensi)->days;
-
-        // Jika SDAYS dimulai dari 0
-        $sdaysToday = $daysDiff % 12;
+        $presensi_dt = new \DateTime($presensiDatetimeStr);
+        $shift_start_dt = new \DateTime($shiftStartDateStr);
+        $days_diff = $shift_start_dt->diff($presensi_dt)->days;
+        $sdays_today = $days_diff % 12;
+        $masuk_cepat = 0;
 
         if (!$matchedShift) {
-            echo "Shift tidak ditemukan untuk SDAYS = $sdaysToday\n";
-            return;
+            return "Shift tidak ditemukan untuk SDAYS = $sdays_today";
         }
 
-        // Bangun waktu shift berdasarkan tanggal presensi
-        $shiftMasuk = new \DateTime($presensi->format('Y-m-d') . ' ' . date('H:i:s', strtotime($matchedShift->STARTTIME)));
-        $shiftPulang = new \DateTime($presensi->format('Y-m-d') . ' ' . date('H:i:s', strtotime($matchedShift->ENDTIME)));
+        $shift = $matchedShift;
 
-        if ($shiftPulang < $shiftMasuk) {
-            $shiftPulang->modify('+1 day');
+        // Ambil waktu penting
+        $STARTTIME = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->STARTTIME)));
+        $ENDTIME   = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->ENDTIME)));
+
+        if ($ENDTIME < $STARTTIME) {
+            $ENDTIME->modify("+1 day");
         }
 
-        $lateMinutes = (int)$matchedShift->LateMinutes;
-        $earlyMinutes = (int)$matchedShift->EarlyMinutes;
+        $CheckInTime1 = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->CheckInTime1)));
+        $CheckInTime2 = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->CheckInTime2)));
 
-        $maxToleransiMasuk = clone $shiftMasuk;
-        $maxToleransiMasuk->modify("+$lateMinutes minutes");
+        if ($CheckInTime2 < $CheckInTime1) {
+            $CheckInTime2->modify("+1 day");
+        }
 
-        $minToleransiPulang = clone $shiftPulang;
-        $minToleransiPulang->modify("-$earlyMinutes minutes");
+        $CheckOutTime1 = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->CheckOutTime1)));
+        $CheckOutTime2 = new \DateTime($presensi_dt->format("Y-m-d") . " " . date("H:i:s", strtotime($shift->CheckOutTime2)));
 
-        echo "Presensi: {$presensi->format('Y-m-d H:i:s')}\n";
-        echo "Shift Masuk: {$shiftMasuk->format('H:i')} | Pulang: {$shiftPulang->format('H:i')}\n";
+        if ($CheckOutTime2 < $CheckOutTime1) {
+            $CheckOutTime2->modify("+1 day");
+        }
 
-        if ($presensi <= $maxToleransiMasuk) {
-            echo "➡️ Presensi Masuk: ";
-            if ($presensi > $shiftMasuk) {
-                $late = round(($presensi->getTimestamp() - $shiftMasuk->getTimestamp()) / 60);
-                echo "Terlambat $late menit.\n";
-            } else {
-                echo "Tepat waktu.\n";
-            }
-        } elseif ($presensi >= $shiftPulang) {
-            echo "➡️ Presensi Pulang: ";
-            if ($presensi < $minToleransiPulang) {
-                $early = round(($minToleransiPulang->getTimestamp() - $presensi->getTimestamp()) / 60);
-                echo "Pulang cepat $early menit.\n";
-            } else {
-                echo "Tepat waktu.\n";
-            }
+        $LateMinutes = (int) $shift->LateMinutes;
+        $EarlyMinutes = (int) $shift->EarlyMinutes;
+        //Masuk
+        if ($presensi_dt >= $CheckInTime1 && $presensi_dt <= $CheckInTime2) {
+
+           //jika selisih melebihi 24 jam modifikasi starttime ditambah satu hari
+           if($presensi_dt->diff($STARTTIME)->h > $CheckInTime2->diff($CheckInTime1)->h){
+                $STARTTIME->modify("+1 day");
+           }
+
+           $terlambat = round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60;
+           // jika nilai terlambat minus maka pulang cepat
+           if($terlambat < 0){
+            $masuk_cepat = $terlambat;
+            $terlambat = 0;
+           }elseif($terlambat > 0 && $terlambat > $LateMinutes){
+             // jika terlambat melebihi batas tolerasni
+            $masuk_cepat = 0;
+           }
+//         $terlambat = max(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
+//         $masuk_cepat = min(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
+
+            return [
+                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "Presensi" => "Masuk",
+                'late_tolerance' => $LateMinutes,
+                "SDAYS" => $sdays_today,
+                "late" => $terlambat, // in minutes
+                "early_checkin" => abs($masuk_cepat)
+            ];
+        } elseif ($presensi_dt >= $CheckOutTime1 && $presensi_dt <= $CheckOutTime2) {
+            $pulang_cepat = max(0, round(($ENDTIME->getTimestamp() - $presensi_dt->getTimestamp()) / 60));
+            $lembur = max(0, round(($presensi_dt->getTimestamp() - $ENDTIME->getTimestamp()) / 60));
+
+            return [
+                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "Presensi" => "Pulang",
+                "SDAYS" => $sdays_today,
+                "Pulang cepat (menit)" => $pulang_cepat,
+                "Lembur (menit)" => $lembur
+            ];
         } else {
-            echo "Presensi di tengah shift, tidak bisa dipastikan masuk atau pulang.\n";
+            return [
+                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "Presensi" => "❓ Tidak valid",
+                "SDAYS" => $sdays_today
+            ];
         }
     }
     private function getEmployeeCheckType($userID,$dateTime){
