@@ -58,7 +58,7 @@ class SyncAttLogCommand extends Command
             if($workSchedule){
                 $result = $this->hitungPresensi($val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
 
-                if($result['Presensi']=='Masuk' && $result['late'] > 0){
+                if($result && $result['check_type']==CheckType::OUT){
                     print_r($result);
 
                 }
@@ -146,7 +146,10 @@ class SyncAttLogCommand extends Command
         $shift_start_dt = new \DateTime($shiftStartDateStr);
         $days_diff = $shift_start_dt->diff($presensi_dt)->days;
         $sdays_today = $days_diff % 12;
-        $masuk_cepat = 0;
+        $early_checkin = 0;
+        $early_checkout = 0;
+        $overtime = 0;
+        $late=0;
 
         if (!$matchedShift) {
             return "Shift tidak ditemukan untuk SDAYS = $sdays_today";
@@ -176,6 +179,11 @@ class SyncAttLogCommand extends Command
             $CheckOutTime2->modify("+1 day");
         }
 
+        if($presensi_dt->diff($CheckOutTime1)->h > $CheckOutTime2->diff($CheckOutTime1)->h){
+            $CheckOutTime1->modify("-1 day");
+
+        }
+
         $LateMinutes = (int) $shift->LateMinutes;
         $EarlyMinutes = (int) $shift->EarlyMinutes;
         //Masuk
@@ -186,49 +194,124 @@ class SyncAttLogCommand extends Command
                 $STARTTIME->modify("+1 day");
            }
 
-           $terlambat = round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60;
+           $late = round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60;
            // jika nilai terlambat minus maka pulang cepat
-           if($terlambat < 0){
-            $masuk_cepat = $terlambat;
-            $terlambat = 0;
-           }elseif($terlambat > 0 && $terlambat > $LateMinutes){
+           if($late < 0){
+            $early_checkin = $late;
+            $late = 0;
+           }elseif($late > 0 && $late > $LateMinutes){
              // jika terlambat melebihi batas tolerasni
-            $masuk_cepat = 0;
+            $early_checkin = 0;
            }
 //         $terlambat = max(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
-//         $masuk_cepat = min(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
+//         $early_checkin = min(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
 
             return [
                 "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
                 "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
                 "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
-                "Presensi" => "Masuk",
+                'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
+                'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
+                'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
+                'checkout_time2'=>$CheckOutTime2->format('Y-m-d H:i:s'),
+                "check_type" => CheckType::IN,
                 'late_tolerance' => $LateMinutes,
+                'early_tolerance' => $EarlyMinutes,// toleransi pulang cepat
                 "SDAYS" => $sdays_today,
-                "late" => $terlambat, // in minutes
-                "early_checkin" => abs($masuk_cepat)
+                "late" => $late, // in minutes
+                "early_checkin" => abs($early_checkin), // in minutes
+                "overtime" => $overtime, // lembur
+                "early_checkout" => abs($early_checkout) // in minutes
             ];
-        } elseif ($presensi_dt >= $CheckOutTime1 && $presensi_dt <= $CheckOutTime2) {
-            $pulang_cepat = max(0, round(($ENDTIME->getTimestamp() - $presensi_dt->getTimestamp()) / 60));
-            $lembur = max(0, round(($presensi_dt->getTimestamp() - $ENDTIME->getTimestamp()) / 60));
+        }
+        //normal checkout
+        //dihitung mulai dari batas akhir checkin sampai batas akhir checkout2
+        elseif ($presensi_dt >= $CheckOutTime1 && $presensi_dt <= $CheckOutTime2)
+        {
+//2025-05-25 01:09:58 > 2025-05-25 23:00:00 2025-05-25 23:28:23 < 2025-05-25 03:00:00
+
+            $overtime = round($presensi_dt->getTimestamp() - $ENDTIME->getTimestamp()) / 60;
+
+          if($overtime < 0){
+            $early_checkout = $overtime;
+            $overtime= 0;
+           }elseif($overtime > 0 && $late > $LateMinutes){
+             // jika terlambat melebihi batas tolerasni
+            $early_checkin = 0;
+           }
+
 
             return [
                 "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
                 "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
                 "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
-                "Presensi" => "Pulang",
+                'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
+                'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
+                'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
+                'checkout_time2'=>$CheckOutTime2->format('Y-m-d H:i:s'),
+                "check_type" => CheckType::OUT,
+                'late_tolerance' => $LateMinutes,
+                'early_tolerance' => $EarlyMinutes,// toleransi pulang cepat
                 "SDAYS" => $sdays_today,
-                "Pulang cepat (menit)" => $pulang_cepat,
-                "Lembur (menit)" => $lembur
+                "late" => $late, // in minutes
+                "early_checkin" => abs($early_checkin), // in minutes
+                "overtime" => $overtime, // lembur
+                "early_checkout" => abs($early_checkout) // in minutes
+            ];
+        } //early echeckout
+        elseif ($presensi_dt >= $CheckInTime2 && $presensi_dt <= $CheckOutTime2)
+        {
+//2025-05-25 01:09:58 > 2025-05-25 23:00:00 2025-05-25 23:28:23 < 2025-05-25 03:00:00
+
+            $overtime = round($presensi_dt->getTimestamp() - $ENDTIME->getTimestamp()) / 60;
+
+          if($overtime < 0){
+            $early_checkout = $overtime;
+            $overtime= 0;
+           }elseif($overtime > 0 && $late > $LateMinutes){
+             // jika terlambat melebihi batas tolerasni
+            $early_checkin = 0;
+           }
+
+
+            return [
+                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
+                'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
+                'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
+                'checkout_time2'=>$CheckOutTime2->format('Y-m-d H:i:s'),
+                "check_type" => CheckType::OUT,
+                'late_tolerance' => $LateMinutes,
+                'early_tolerance' => $EarlyMinutes,// toleransi pulang cepat
+                "SDAYS" => $sdays_today,
+                "late" => $late, // in minutes
+                "early_checkin" => abs($early_checkin), // in minutes
+                "overtime" => $overtime, // lembur
+                "early_checkout" => abs($early_checkout) // in minutes
             ];
         } else {
-            return [
+
+            $data = [
                 "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
                 "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
                 "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
-                "Presensi" => "❓ Tidak valid",
-                "SDAYS" => $sdays_today
-            ];
+                'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
+                'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
+                'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
+                'checkout_time2'=>$CheckOutTime2->format('Y-m-d H:i:s'),
+                "check_type" => CheckType::OUT,
+                'late_tolerance' => $LateMinutes,
+                'early_tolerance' => $EarlyMinutes,// toleransi pulang cepat
+                "SDAYS" => $sdays_today,
+                "late" => $late, // in minutes
+                "early_checkin" => abs($early_checkin), // in minutes
+                "overtime" => $overtime, // lembur
+                "early_checkout" => abs($early_checkout) // in minutes
+             ];
+            info($data);
+            return null;
         }
     }
     private function getEmployeeCheckType($userID,$dateTime){
