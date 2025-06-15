@@ -64,3 +64,19 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+SELECT *
+FROM num_run_deil
+WHERE NUM_RUNID = 3
+  AND MOD(DATEDIFF('2025-04-15', '2025-04-01'), 12) BETWEEN SDAYS AND EDAYS;
+
+   SELECT *
+ FROM user_of_run
+ 
+ INNER JOIN num_run ON num_run.NUM_RUNID = user_of_run.NUM_OF_RUN_ID 
+ INNER JOIN num_run_deil ON num_run_deil.NUM_RUNID = num_run.NUM_RUNID
+ WHERE USERID=22  
+ -- WHERE NUM_RUNID = 3
+ AND MOD(DATEDIFF('2025-04-13', num_run.STARTDATE), IF(num_run.UNITS=1,7,num_run.UNITS) ) BETWEEN SDAYS AND EDAYS;
+
