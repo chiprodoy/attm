@@ -14,11 +14,23 @@ return new class extends Migration
         Schema::create('att_logs', function (Blueprint $table) {
             $table->id();
             $table->integer('USERID');
-            $table->dateTime('att_log_time');
-            $table->dateTime('work_schedule');
-            $table->integer('att_check_type');//1 = in, 2 = out
-            $table->integer('att_log_type');//1=normal, 2 = late,3=early,4=overtime
-            $table->double('late_early_amount');//second
+            $table->dateTime('checklog_time');
+            $table->dateTime('shift_in');
+            $table->dateTime('shift_out');
+            $table->dateTime('checkin_time1');
+            $table->dateTime('checkin_time2');
+            $table->dateTime('checkout_time1');
+            $table->dateTime('checkout_time2');
+            $table->integer('check_type');//1 = in, 2 = out
+            $table->integer('late_tolerance');
+            $table->integer('early_tolerance');// toleransi pulang cepat
+            $table->integer('SDAYS');
+            $table->integer('late'); // in minutes
+            $table->integer('early_checkin'); // in minutes
+            $table->integer('overtime'); // lembur
+            $table->integer('early_checkout'); // in minutes
+            $table->integer('check_log_status'); //
+            $table->string("departement_name");
             $table->timestamps();
         });
     }

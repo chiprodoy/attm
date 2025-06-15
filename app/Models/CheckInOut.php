@@ -72,6 +72,14 @@ class CheckInOut extends Model
 
         return $data;
     }
+
+    // public function getDepartementNameAttribute($departementID=null,$temporaryDeptName=''){
+
+    //     $employee = Employee::find($this->USERID);
+    //     return $employee->getDepartementName();
+
+    // }
+
     static function readCheckInOutData($date){
 
         // $date= Carbon::parse($date);

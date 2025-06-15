@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use App\Models\AttLog;
 use App\Models\CheckInOut;
+use App\Models\CheckLogStatus;
 use App\Models\CheckType;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 
 class SyncAttLogCommand extends Command
@@ -16,7 +18,7 @@ class SyncAttLogCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sync:attlog {--date=}';
+    protected $signature = 'sync:attlog {--date=} {--until=}';
 
     /**
      * The console command description.
@@ -27,7 +29,9 @@ class SyncAttLogCommand extends Command
 
     protected $checkInOutTableSource = CheckInOut::class;
 
-    private $startDateParam;
+    private $startDateParam=null;
+
+    private $endDateParam=null;
 
     private $startDate;
 
@@ -42,47 +46,37 @@ class SyncAttLogCommand extends Command
             $this->startDateParam = Carbon::now()->toDateString();
         }
 
+        if($this->hasOption('until')){
+            $this->endDateParam = $this->option('until');
+        }else{
+            $this->endDateParam = Carbon::now()->toDateTimeString();
+        }
+
         $this->startDate = $this->setStartDate();
 
-        echo $this->startDate;
+        $this->info("start sinkron date: ".$this->startDate);
 
-        $checkInOutData = $this->readCheckInOutData($this->startDate);
-
-        foreach($checkInOutData as $key => $val){
-            $workSchedule = $val->getCurrentWorkSchedule();
-
-            $attCheckType = $this->setCheckType($val,$workSchedule);
-            // cari jumlah cepat atau jumlah lambat
-            //jika check type in maka cari jumlah telat
-            //jika check type out maka cari jumlah pulang cepat
-            if($workSchedule){
-                $result = $this->hitungPresensi($val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
-
-                if($result && $result['check_type']==CheckType::OUT){
-                    print_r($result);
-
-                }
-            }else{
-                info('jadwal tidak ditemukan');
-            }
+        $this->readCheckInOutData($this->startDate,$this->endDateParam);
 
 
-            // $this->setAttLogTable($val->USERID,
-            // $val->CHECKTIME,
-            // $attCheckType,
-            // $attLogType,
-            // $lateEearlyAmount,
-            // $workSchedule);
-        }
 
         //
     }
     private function setStartDate(){
-        $data=AttLog::whereRaw('DATE(att_log_time)='.$this->startDateParam)
-        ->orderBy('att_log_time','desc')
-        ->first();
-        if($data){
-            return $data->att_log_time;
+        if(empty($this->startDateParam)){
+            // cari checklog time terakhir
+            $data=AttLog::orderBy('checklog_time','desc')
+                ->first();
+
+            if($data){
+               return $data->checklog_time;
+            }else{
+                $data=CheckInOut::orderBy('CHECKTIME','asc')
+                ->first();
+               return $data->CHECKTIME;
+
+            }
+
         }else{
             return $this->startDateParam.' 00:00:00';
         }
@@ -113,17 +107,98 @@ class SyncAttLogCommand extends Command
             return $attCheckType;
     }
 
-    private function readCheckInOutData($date){
+    private function processingCheckInOutData($checkInOutData){
 
-        $date= Carbon::parse($date);
-        $start = $date->toDateTimeString();
-        $end = $date->endOfDay()->toDateTimeString();
+        foreach($checkInOutData as $key => $val){
+            $this->info('Processing checktime : '.$val->CHECKTIME);
+            $workSchedule = $val->getCurrentWorkSchedule();
+                    // cari jumlah cepat atau jumlah lambat
+                    //jika check type in maka cari jumlah telat
+                    //jika check type out maka cari jumlah pulang cepat
+            if($workSchedule){
+                $result = $this->hitungPresensi($val->employee,$val->CHECKTIME,$workSchedule->STARTDATE,$workSchedule);
+                if(!empty($result)) {
+                    $this->savePresence($result);
+                }else{
+                    info('result tidak ditemukan :'.$val->CHECKTIME);
+                }
+            }else{
+                info('jadwal tidak ditemukan');
+                info($val);
+            }
+
+        }
+       // $this->readCheckInOutData()
+    }
+
+    private function savePresence($presentData){
+
+        $this->info('begin save presensi');
+        //cari di table attlog presensi berdasarkan user, tanggalshift dan check type
+        //jika ada yang sama maka update
+        // jika tidak ada maka insert
+        // untuk check type masuk ambil waktu paling kecil (pertama checklog)
+        // untuk check type pulang ambil waktu paling besar (terakhir checklog)
+        //
+        $shiftIn = new \DateTime($presentData['shift_in']);
+        $shiftOut = new \DateTime($presentData['shift_out']);
+        $checklogTime = new \DateTime($presentData['checklog_time']);
+
+        $recordExistOnAttlog = AttLog::where('USERID',$presentData['USERID'])
+                    ->where('check_type',$presentData['check_type'])
+                    ->where('shift_in',$shiftIn->format('Y-m-d H:i:s'))
+                    ->where('shift_out',$shiftOut->format('Y-m-d H:i:s'))
+                    ->first();
+
+        if($recordExistOnAttlog){
+            $this->info('record exist');
+
+            $checklogTimeOnRecord = new \DateTime($recordExistOnAttlog->checklog_time);
+
+            if($recordExistOnAttlog->check_type==CheckType::IN){
+                if($checklogTime->getTimestamp() < $checklogTimeOnRecord->getTimestamp()){
+                     $recordExistOnAttlog->update([$presentData]);
+                     $this->info('checktype in update attlog');
+                }else{
+                    AttLog::create($presentData);
+                     $this->info('checktype in create attlog');
+                }
+            }elseif($recordExistOnAttlog->check_type==CheckType::OUT){
+                if($checklogTime->getTimestamp() > $checklogTimeOnRecord->getTimestamp()){
+                     $recordExistOnAttlog->update([$presentData]);
+                     $this->info('checktype out update attlog');
+                }else{
+                    AttLog::create($presentData);
+                     $this->info('checktype out create update attlog');
+                }
+            }
+        }else{
+            //jika record belum pernah ada insert
+            AttLog::create($presentData);
+
+        }
+
+    }
+
+    private function readCheckInOutData($startDate,$endDate=null){
+
+        $this->info("start read checkinout data for date: ".$startDate);
+
+        $start = Carbon::parse($startDate)->toDateTimeString();
+
+        if(empty($endDate)){
+            $end = Carbon::now()->toDateTimeString();
+        }else{
+            $end = Carbon::parse($endDate)->toDateTimeString();
+        }
 
         $data = $this->checkInOutTableSource::whereBetween('CHECKTIME',[$start,$end])
-         ->orderBy('CHECKTIME','desc')
+         ->orderBy('CHECKTIME','asc')
          ->get();
+        $this->processingCheckInOutData($data);
 
-         return $data;
+        $this->info("end read checkinout data at date: ".$end);
+
 
     }
 
@@ -139,7 +214,7 @@ class SyncAttLogCommand extends Command
         ]);
     }
 
-    function hitungPresensi($presensiDatetimeStr, $shiftStartDateStr,$matchedShift)
+    function hitungPresensi($employee,$presensiDatetimeStr, $shiftStartDateStr,$matchedShift)
     {
 
         $presensi_dt = new \DateTime($presensiDatetimeStr);
@@ -150,6 +225,9 @@ class SyncAttLogCommand extends Command
         $early_checkout = 0;
         $overtime = 0;
         $late=0;
+        $checkLogStatus = CheckLogStatus::NORMAL;
+        $userID=$employee->USERID;
+        $departementName = $employee->parent_departement_name;
 
         if (!$matchedShift) {
             return "Shift tidak ditemukan untuk SDAYS = $sdays_today";
@@ -199,17 +277,21 @@ class SyncAttLogCommand extends Command
            if($late < 0){
             $early_checkin = $late;
             $late = 0;
+            $checkLogStatus = CheckLogStatus::EARLY_CHECKIN;
+
            }elseif($late > 0 && $late > $LateMinutes){
              // jika terlambat melebihi batas tolerasni
             $early_checkin = 0;
+            $checkLogStatus = CheckLogStatus::LATE;
            }
 //         $terlambat = max(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
 //         $early_checkin = min(0, round($presensi_dt->getTimestamp() - $STARTTIME->getTimestamp()) / 60);
 
             return [
-                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
-                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
-                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "USERID"=>$userID,
+                "checklog_time"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_in"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_out"=>$ENDTIME->format('Y-m-d H:i:s'),
                 'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
                 'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
                 'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
@@ -222,6 +304,9 @@ class SyncAttLogCommand extends Command
                 "early_checkin" => abs($early_checkin), // in minutes
                 "overtime" => $overtime, // lembur
                 "early_checkout" => abs($early_checkout) // in minutes
+                ,"check_log_status" => $checkLogStatus
+                ,"departement_name"=>$departementName
+
             ];
         }
         //normal checkout
@@ -235,16 +320,20 @@ class SyncAttLogCommand extends Command
           if($overtime < 0){
             $early_checkout = $overtime;
             $overtime= 0;
+            $checkLogStatus = CheckLogStatus::EARLY_CHECKOUT;
+
            }elseif($overtime > 0 && $late > $LateMinutes){
              // jika terlambat melebihi batas tolerasni
             $early_checkin = 0;
+            $checkLogStatus = CheckLogStatus::OVERTIME;
            }
 
 
             return [
-                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
-                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
-                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "USERID"=>$userID,
+                "checklog_time"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_in"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_out"=>$ENDTIME->format('Y-m-d H:i:s'),
                 'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
                 'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
                 'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
@@ -257,6 +346,8 @@ class SyncAttLogCommand extends Command
                 "early_checkin" => abs($early_checkin), // in minutes
                 "overtime" => $overtime, // lembur
                 "early_checkout" => abs($early_checkout) // in minutes
+                ,"check_log_status" => $checkLogStatus
+                ,"departement_name"=>$departementName
             ];
         } //early echeckout
         elseif ($presensi_dt >= $CheckInTime2 && $presensi_dt <= $CheckOutTime2)
@@ -268,16 +359,21 @@ class SyncAttLogCommand extends Command
           if($overtime < 0){
             $early_checkout = $overtime;
             $overtime= 0;
+            $checkLogStatus = CheckLogStatus::EARLY_CHECKOUT;
+
            }elseif($overtime > 0 && $late > $LateMinutes){
              // jika terlambat melebihi batas tolerasni
             $early_checkin = 0;
+            $checkLogStatus = CheckLogStatus::OVERTIME;
+
            }
 
 
             return [
-                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
-                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
-                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "USERID"=>$userID,
+                "checklog_time"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_in"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_out"=>$ENDTIME->format('Y-m-d H:i:s'),
                 'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
                 'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
                 'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
@@ -290,13 +386,17 @@ class SyncAttLogCommand extends Command
                 "early_checkin" => abs($early_checkin), // in minutes
                 "overtime" => $overtime, // lembur
                 "early_checkout" => abs($early_checkout) // in minutes
+                ,"check_log_status" => $checkLogStatus
+                ,"departement_name"=>$departementName
+
             ];
         } else {
 
             $data = [
-                "tgl_presensi"=>$presensi_dt->format('Y-m-d H:i:s'),
-                "shift_masuk"=>$STARTTIME->format('Y-m-d H:i:s'),
-                "shift_pulang"=>$ENDTIME->format('Y-m-d H:i:s'),
+                "USERID"=>$userID,
+                "checklog_time"=>$presensi_dt->format('Y-m-d H:i:s'),
+                "shift_in"=>$STARTTIME->format('Y-m-d H:i:s'),
+                "shift_out"=>$ENDTIME->format('Y-m-d H:i:s'),
                 'checkin_time1'=>$CheckInTime1->format('Y-m-d H:i:s'),
                 'checkin_time2'=>$CheckInTime2->format('Y-m-d H:i:s'),
                 'checkout_time1'=>$CheckOutTime1->format('Y-m-d H:i:s'),
@@ -309,9 +409,12 @@ class SyncAttLogCommand extends Command
                 "early_checkin" => abs($early_checkin), // in minutes
                 "overtime" => $overtime, // lembur
                 "early_checkout" => abs($early_checkout) // in minutes
+                ,"check_log_status" => $checkLogStatus
+                ,"departement_name"=>$departementName
+
              ];
-            info($data);
-            return null;
+
+            return $data;
         }
     }
     private function getEmployeeCheckType($userID,$dateTime){

@@ -32,4 +32,22 @@ class Employee extends Model
 
         return $data;
     }
+
+    public function getParentDepartementNameAttribute($departementID=null,$temporaryDeptName=''){
+
+        if(empty($departementID)){
+            $departementID = $this->DEFAULTDEPTID;
+        }
+
+        $data = DB::connection('attdb')->table('departments')
+            ->where('DEPTID',$departementID)
+            ->first();
+
+        $temporaryDeptName='/'.$data->DEPTNAME.$temporaryDeptName;
+        if($data->SUPDEPTID > 1){
+            return $this->getParentDepartementNameAttribute($data->SUPDEPTID,$temporaryDeptName);
+        }else{
+            return substr($temporaryDeptName,1);
+        }
+    }
 }
