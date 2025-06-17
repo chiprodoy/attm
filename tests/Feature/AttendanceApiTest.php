@@ -7,6 +7,52 @@ use Tests\TestCase;
 
 class AttendanceApiTest extends TestCase
 {
+    /**
+     * Test the /api/late endpoint returns successful response.
+     */
+    public function test_presensi_endpoint_with_start_date_parameter_returns_data_successfully()
+    {
+        $paramDate='2025-05-25';
+        $response = $this->getJson('/api/presensi/?start_date='.$paramDate);
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'status',
+                     'message',
+                     'data' => [
+                         '*' => [
+                             'USERID',
+                             'checklog_time',
+                             'shift_in',
+                             'shift_out',
+                             'departement_name',
+                             'employee'=>['Name']
+                         ]
+                     ]
+                 ]);
+    }
+
+    /**
+     * Test the /api/late endpoint returns successful response.
+     */
+    public function test_presensi_endpoint_returns_data_successfully()
+    {
+        $response = $this->getJson('/api/presensi');
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'status',
+                     'message',
+                     'data' => [
+                        '*' => [
+                             'USERID',
+                             'checklog_time',
+                             'shift_in',
+                             'shift_out',
+                             'departement_name',
+                             'employee'=>['Name']
+                         ]
+                     ]
+                 ]);
+    }
      /**
      * Test the /api/late endpoint returns successful response.
      */
