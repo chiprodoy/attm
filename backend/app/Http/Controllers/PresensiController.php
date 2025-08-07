@@ -19,7 +19,8 @@ class PresensiController extends BaseController
         }
 
         $data=AttLog::with('employee')->whereRaw("DATE(checklog_time)=DATE('".$startDate."')")
-                ->orderBy('checklog_time','desc')
+                ->orderBy('checklog_time','asc')
+                ->limit(1)
                 ->get();
         return $this->sendResponse($data);
 
