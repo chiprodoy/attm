@@ -13,6 +13,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        //$schedule->command('sync:attlog',['--date'=>'2025-08-01'])->everySecond();
+        $schedule->command('sync:attlog',['--date'=>'2025-09-19'])->everySecond();
+
     }
 
     /**

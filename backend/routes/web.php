@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\iclockController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\MCUController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TVController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,23 +22,29 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
+    Route::get('/mcu', [MCUController::class,'index'])->name('mcu.index');
+    Route::resource('/leave',LeaveController::class);
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('users', UserController::class);
 });
 
 Route::get('tv',[TVController::class,'index']);
+
+// handshake
+Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
+// request dari device
+Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
+
+Route::get('/iclock/test', [iclockController::class, 'test']);
+Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+
+
 require __DIR__.'/auth.php';

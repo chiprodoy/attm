@@ -16,4 +16,11 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_adms_receive_message(): void
+    {
+        $response = $this->post('iclock/cdata');
+        $response->assertStatus(200);
+    }
+
 }

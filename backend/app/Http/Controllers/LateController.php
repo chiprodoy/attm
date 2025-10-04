@@ -14,7 +14,7 @@ class LateController extends BaseController
     public function index(Request $req){
         $startDate = Carbon::now()->toDateString();
 
-        if($req->has('start_date')){
+        if($req->has('start_date') && !empty($req->input('start_date'))){
             $startDate = $req->input('start_date');
         }
 

@@ -112,6 +112,13 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
+        'access' => [
+            'driver'   => 'odbc',
+            'dsn'      => 'odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=' . storage_path('app/public/att2000.mdb') . ';Uid=;Pwd=;',
+            'host'     => '',
+            'database' => '',
+        ],
+
 
     ],
 

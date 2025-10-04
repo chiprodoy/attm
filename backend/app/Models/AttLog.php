@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AttLog extends Model
 {
@@ -11,6 +13,8 @@ class AttLog extends Model
     protected $fillable=[
             'USERID',
             'checklog_time',
+            'check_log_in',
+            'check_log_out',
             'shift_in',
             'shift_out',
             'checkin_time1',
@@ -30,10 +34,26 @@ class AttLog extends Model
 
     ];
 
+    protected $casts = ['checklog_time' => 'date'];
     public function employee()
     {
         return $this->belongsTo(Employee::class,'USERID','USERID');
 
+    }
+
+        /**
+     * Set the uid.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function getHasMcuAttribute($value)
+    {
+
+        return DB::table('mcu')
+                    ->where('USERID',$this->USERID)
+                    ->whereDate('mcu_date',Carbon::parse($this->checklog_time)->toDateString())
+                    ->exists();
     }
 }
 
