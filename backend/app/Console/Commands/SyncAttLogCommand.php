@@ -20,7 +20,7 @@ class SyncAttLogCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sync:attlog {--date=} {--until=}';
+    protected $signature = 'sync:attlog {--date=} {--until=} {--noservice=}';
 
     /**
      * The console command description.
@@ -37,11 +37,18 @@ class SyncAttLogCommand extends Command
 
     private $startDate;
 
+    private $asService=true;
+
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        if($this->hasOption('noservice')){
+            $this->asService = false;
+        }
+
         if($this->hasOption('date')){
             $this->startDateParam = $this->option('date');
         }else{
@@ -57,10 +64,20 @@ class SyncAttLogCommand extends Command
         $this->startDate = $this->setStartDate();
 
         $this->info("start sinkron date: ".$this->startDate);
+        Log::info('syncattlogcommand asService : '.$this->asService);
 
-        $this->readCheckInOutData($this->startDate,$this->endDateParam);
+        if(!$this->asService){
+            $this->readCheckInOutData($this->startDate,$this->endDateParam);
+        }
 
+        while($this->asService){
+            Log::info('syncattlogcommand while asService : '.$this->asService);
 
+            $this->readCheckInOutData($this->startDate,$this->endDateParam);
+            sleep(1);
+        }
+
+        return Command::SUCCESS;
 
         //
     }

@@ -4,10 +4,15 @@ FROM php:8.2-fpm
 #  Install dependency dasar PHP + ODBC + build tools
 # ======================================================
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    build-essential autoconf pkg-config unixodbc unixodbc-dev mdbtools odbcinst odbc-mdbtools \
+    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev tzdata \
+    build-essential autoconf pkg-config unixodbc unixodbc-dev mdbtools odbcinst odbc-mdbtools cron \
     && docker-php-ext-configure pdo_odbc --with-pdo-odbc=unixODBC,/usr \
     && docker-php-ext-install pdo_odbc pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Set timezone ke Asia/Jakarta
+ENV TZ=Asia/Jakarta
+RUN echo "Asia/Jakarta" > /etc/timezone \
+    && ln -snf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 
 # ======================================================
 #  Install Composer
@@ -35,6 +40,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 # ======================================================
 #  Permission dan CMD
 # ======================================================
+RUN mkdir -p /etc/crontabs /var/log/cron \
+    && chown -R www-data:www-data /etc/crontabs /var/log/cron \
+    && chmod 777 /etc/crontabs
+    
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 CMD ["php-fpm"]
