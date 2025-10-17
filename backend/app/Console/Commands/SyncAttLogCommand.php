@@ -20,7 +20,7 @@ class SyncAttLogCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sync:attlog {--date=} {--until=} {--noservice=}';
+    protected $signature = 'sync:attlog {--date=} {--until=} {--noservice=} {--allday}';
 
     /**
      * The console command description.
@@ -39,6 +39,7 @@ class SyncAttLogCommand extends Command
 
     private $asService=true;
 
+    private $isAllDay = false; // jika true maka akan sinkronisasi semua data checkinout, bukan range jam
 
     /**
      * Execute the console command.
@@ -47,6 +48,10 @@ class SyncAttLogCommand extends Command
     {
         if($this->hasOption('noservice')){
             $this->asService = false;
+        }
+
+        if($this->option('allday')){
+            $this->isAllDay = true;
         }
 
         if($this->hasOption('date')){
@@ -66,30 +71,31 @@ class SyncAttLogCommand extends Command
         $this->info("start sinkron date: ".$this->startDate);
         Log::info('syncattlogcommand asService : '.$this->asService);
 
-        if(!$this->asService){
-            $this->readCheckInOutData($this->startDate,$this->endDateParam);
-        }
+        // if(!$this->asService){
+        //     $this->readCheckInOutData($this->startDate,$this->endDateParam);
+        // }
 
-        while($this->asService){
+        // while($this->asService){
             Log::info('syncattlogcommand while asService : '.$this->asService);
 
             $this->readCheckInOutData($this->startDate,$this->endDateParam);
-            sleep(1);
-        }
+        //     sleep(1);
+        // }
 
         return Command::SUCCESS;
 
         //
     }
     private function setStartDate(){
-        if(empty($this->startDateParam)){
+
+        if(!$this->isAllDay){
+        //if(empty($this->startDateParam)){
             // cari checklog time terakhir
            // $data=AttLog::orderBy('checklog_time','desc')
             $data=AttLog::orderBy('check_log_in','desc')
                 ->first();
-
             if($data){
-               return $data->checklog_time;
+               return $data->check_log_in;
             }else{
                 $data=CheckInOut::orderBy('CHECKTIME','asc')
                 ->first();
@@ -97,9 +103,8 @@ class SyncAttLogCommand extends Command
 
             }
 
-        }else{
-            return $this->startDateParam.' 00:00:00';
         }
+            return $this->startDateParam.' 00:00:00';
 
     }
 
