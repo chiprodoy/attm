@@ -31,9 +31,9 @@ services:
       sh -c "echo '* * * * * cd /var/www && /usr/local/bin/php artisan schedule:run >> /var/www/storage/logs/laravel-scheduler.log 2>&1' > /etc/cron.d/laravel-cron
       && chmod 0644 /etc/cron.d/laravel-cron
       && crontab /etc/cron.d/laravel-cron
-      && cron
-      && php-fpm
-      && php artisan queue:work --sleep=1 --tries=3 --timeout=120"
+      && cron &
+      php artisan queue:work --sleep=1 --tries=3 --timeout=120 &
+      php-fpm"
   # ==========================
   # NGINX SERVER
   # ==========================
