@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\Log;
 class iclockController extends Controller
 {
 
+    private function appLog(){
+        return Log::build([
+                'driver' => 'daily',
+                'path' => storage_path('logs/iclock_controller.log'),
+        ]);
+    }
+
    public function __invoke(Request $request)
    {
 
@@ -20,7 +27,7 @@ class iclockController extends Controller
     // handshake
 public function handshake(Request $request)
 {
-    Log::info('Start handshake');
+    $this->appLog()->info('Start handshake');
     $data = [
         'url' => json_encode($request->all()),
         'data' => $request->getContent(),
@@ -58,12 +65,12 @@ public function handshake(Request $request)
     // request absensi
     public function receiveRecords(Request $request)
     {
-        Log::info('start receive record');
+        $this->appLog()->info('start receive record');
 
         //DB::connection()->enableQueryLog();
         $content['url'] = json_encode($request->all());
         $content['data'] = $request->getContent();
-        Log::info('content'.json_encode($content));
+        $this->appLog()->info('content'.json_encode($content));
 
         DB::table('finger_log')->insert($content);
         try {
@@ -104,7 +111,7 @@ public function handshake(Request $request)
 
         } catch (\Throwable $e) {
             $data['error'] = $e;
-            Log::error($e);
+            $this->appLog()->error($e);
             DB::table('error_log')->insert($data);
             report($e);
             return "ERROR: ".$tot."\n";
