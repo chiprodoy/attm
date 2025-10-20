@@ -4,7 +4,7 @@ FROM php:8.2-fpm
 #  Install dependency dasar PHP + ODBC + build tools
 # ======================================================
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev tzdata \
+    git supervisor curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev tzdata \
     build-essential autoconf pkg-config unixodbc unixodbc-dev mdbtools odbcinst odbc-mdbtools cron \
     && docker-php-ext-configure pdo_odbc --with-pdo-odbc=unixODBC,/usr \
     && docker-php-ext-install pdo_odbc pdo_mysql mbstring exif pcntl bcmath gd zip
@@ -46,4 +46,8 @@ RUN mkdir -p /etc/crontabs /var/log/cron \
     
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-CMD ["php-fpm"]
+# Copy konfigurasi Supervisor
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Gunakan supervisord untuk menjalankan php-fpm + queue + cron bersamaan
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
