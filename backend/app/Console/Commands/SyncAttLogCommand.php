@@ -41,11 +41,20 @@ class SyncAttLogCommand extends Command
 
     private $isAllDay = false; // jika true maka akan sinkronisasi semua data checkinout, bukan range jam
 
+    private $appLog;
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->appLog = Log::build([
+
+            'driver' => 'daily',
+            'path' => storage_path('logs/sync_att_log_command.log'),
+
+        ]);
+
         if($this->hasOption('noservice')){
             $this->asService = false;
         }
@@ -69,14 +78,14 @@ class SyncAttLogCommand extends Command
         $this->startDate = $this->setStartDate();
 
         $this->info("start sinkron date: ".$this->startDate);
-        Log::info('syncattlogcommand asService : '.$this->asService);
+        $this->appLog->info('syncattlogcommand asService : '.$this->asService);
 
         // if(!$this->asService){
         //     $this->readCheckInOutData($this->startDate,$this->endDateParam);
         // }
 
         // while($this->asService){
-            Log::info('syncattlogcommand while asService : '.$this->asService);
+            $this->appLog->info('syncattlogcommand while asService : '.$this->asService);
 
             $this->readCheckInOutData($this->startDate,$this->endDateParam);
         //     sleep(1);
@@ -145,11 +154,11 @@ class SyncAttLogCommand extends Command
                 if(!empty($result)) {
                     $this->savePresence($result);
                 }else{
-                    info('result tidak ditemukan :'.$val->CHECKTIME);
+                    $this->appLog->info('result tidak ditemukan :'.$val->CHECKTIME);
                 }
             }else{
-                info('jadwal tidak ditemukan');
-                info($val);
+                $this->appLog->info('jadwal tidak ditemukan');
+                $this->appLog->info(json_encode($val));
             }
 
         }
@@ -158,7 +167,7 @@ class SyncAttLogCommand extends Command
 
     private function savePresence($presentData){
 
-        Log::debug('savePresence begin save presensi');
+        $this->appLog->debug('savePresence begin save presensi');
 
         //cari di table attlog presensi berdasarkan user, tanggalshift dan check type
         //jika ada yang sama maka update
@@ -177,7 +186,7 @@ class SyncAttLogCommand extends Command
                     ->first();
 
         if($recordExistOnAttlog){
-            $this->info('record exist');
+            $this->appLog->info('record exist');
 
             $checklogTimeOnRecord = new \DateTime($recordExistOnAttlog->checklog_time);
             /*
@@ -189,57 +198,57 @@ class SyncAttLogCommand extends Command
             $this->info('checklogTime : timestamp '.$checklogTime->getTimestamp());
             $this->info('checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
             */
-            Log::debug('savePresence record exist sql '.$recordExistOnAttlog);
+            $this->appLog->debug('savePresence record exist sql '.$recordExistOnAttlog);
             if($recordExistOnAttlog->check_type==CheckType::IN){
                 $updIn = AttLog::where('id',$recordExistOnAttlog->id)->update($presentData);
-                Log::debug('savePresence update IN'.json_encode($presentData));
+                $this->appLog->debug('savePresence update IN'.json_encode($presentData));
 
 
                 /*
                 if($checklogTime->getTimestamp() < $checklogTimeOnRecord->getTimestamp()){
 
                     $recordExistOnAttlog->update([$presentData]);
-                        Log::debug('savePresence update IN'.json_encode($presentData));
-                        Log::debug('savePresence checktype in update because checkin time  on machine < checktime on record');
-                        Log::debug('savePresence checktype '.$presentData['check_type'].' attlog');
-                        Log::debug('savePresence userid : '.$presentData['USERID']);
-                        Log::debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
-                        Log::debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
+                        $this->appLog->debug('savePresence update IN'.json_encode($presentData));
+                        $this->appLog->debug('savePresence checktype in update because checkin time  on machine < checktime on record');
+                        $this->appLog->debug('savePresence checktype '.$presentData['check_type'].' attlog');
+                        $this->appLog->debug('savePresence userid : '.$presentData['USERID']);
+                        $this->appLog->debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
                 }else{
-                        Log::debug('savePresence nothing to do on checktype in because checkin time  on machine > checktime on record');
-                        Log::debug('savePresence checktype '.$presentData['check_type'].' attlog');
-                        Log::debug('savePresence userid : '.$presentData['USERID']);
-                        Log::debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
-                        Log::debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
+                        $this->appLog->debug('savePresence nothing to do on checktype in because checkin time  on machine > checktime on record');
+                        $this->appLog->debug('savePresence checktype '.$presentData['check_type'].' attlog');
+                        $this->appLog->debug('savePresence userid : '.$presentData['USERID']);
+                        $this->appLog->debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
 
                 } */
             }elseif($recordExistOnAttlog->check_type==CheckType::OUT){
                 //$recordExistOnAttlog->update([$presentData]);
                 $updOut = AttLog::where('id',$recordExistOnAttlog->id)->update($presentData);
-                Log::debug('savePresence update OUT'.json_encode($presentData));
+                $this->appLog->debug('savePresence update OUT'.json_encode($presentData));
 
                 /*
                 if($checklogTime->getTimestamp() > $checklogTimeOnRecord->getTimestamp()){
                     $recordExistOnAttlog->update([$presentData]);
-                    Log::debug('savePresence update OUT'.json_encode($presentData));
-                    Log::debug('savePresence checktype out update because checkout time on machine > checktime on record');
-                     Log::debug('savePresence userid : '.$presentData['USERID']);
-                     Log::debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
-                     Log::debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
-                     Log::debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
-                     Log::debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
+                    $this->appLog->debug('savePresence update OUT'.json_encode($presentData));
+                    $this->appLog->debug('savePresence checktype out update because checkout time on machine > checktime on record');
+                     $this->appLog->debug('savePresence userid : '.$presentData['USERID']);
+                     $this->appLog->debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
+                     $this->appLog->debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
+                     $this->appLog->debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
+                     $this->appLog->debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
                 }else{
-                        Log::debug('savePresence nothing to do on checktype out because checkin time  on machine < checktime on record');
-                        Log::debug('savePresence checktype '.$presentData['check_type'].' attlog');
-                        Log::debug('savePresence userid : '.$presentData['USERID']);
-                        Log::debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
-                        Log::debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
-                        Log::debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
+                        $this->appLog->debug('savePresence nothing to do on checktype out because checkin time  on machine < checktime on record');
+                        $this->appLog->debug('savePresence checktype '.$presentData['check_type'].' attlog');
+                        $this->appLog->debug('savePresence userid : '.$presentData['USERID']);
+                        $this->appLog->debug('savePresence checklogTime : time '.$checklogTime->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : time '.$checklogTimeOnRecord->format('Y-m-d H:i:s'));
+                        $this->appLog->debug('savePresence checklogTime : timestamp '.$checklogTime->getTimestamp());
+                        $this->appLog->debug('savePresence checklogTimeOnRecord : timestamp '.$checklogTimeOnRecord->getTimestamp());
 
                 }
                 */
@@ -247,8 +256,8 @@ class SyncAttLogCommand extends Command
 
         }else{
             //jika record belum pernah ada insert
-            Log::debug('savePresence create '.json_encode($presentData));
-            Log::debug('savePresence begin create attlog');
+            $this->appLog->debug('savePresence create '.json_encode($presentData));
+            $this->appLog->debug('savePresence begin create attlog');
             AttLog::create($presentData);
 
         }
@@ -260,7 +269,7 @@ class SyncAttLogCommand extends Command
                 'checklog_status'=>$presentData['check_log_status']
             ]);
         $queries = DB::getQueryLog();
-        Log::debug("SyncAttLogCommand savePresence EmployeeCheckLogStatus qry : ".json_encode($queries));
+        $this->appLog->debug("SyncAttLogCommand savePresence EmployeeCheckLogStatus qry : ".json_encode($queries));
     }
 
     private function readCheckInOutData($startDate,$endDate=null){
@@ -281,8 +290,6 @@ class SyncAttLogCommand extends Command
         $this->processingCheckInOutData($data);
 
         $this->info("end read checkinout data at date: ".$end);
-
-
     }
 
     private function setAttLogTable($userID,$attLogTime,$attCheckType,$attLogType,$lateEearlyAmount,$workSchedule)
