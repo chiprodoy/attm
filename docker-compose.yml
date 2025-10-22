@@ -13,7 +13,6 @@ services:
       - ./backend:/var/www
       - ./backend/storage:/var/www/storage
       - ./backend/bootstrap/cache:/var/www/bootstrap/cache
-      - app_data:/var/www 
     environment:
       - DB_HOST=db
       - DB_PORT=3306

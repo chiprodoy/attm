@@ -23,12 +23,7 @@ class SyncAttlogJob implements ShouldQueue
      */
     public function __construct($date)
     {
-        $this->appLog = Log::build([
 
-            'driver' => 'daily',
-            'path' => storage_path('logs/sync_att_log_job.log'),
-
-        ]);
 
         $this->date = $date;
     }
@@ -38,6 +33,13 @@ class SyncAttlogJob implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->appLog = Log::build([
+
+            'driver' => 'daily',
+            'path' => storage_path('logs/sync_att_log_job.log'),
+
+        ]);
+
         $this->appLog->info("SyncAttlogJob started for date {$this->date}");
 
         try {
