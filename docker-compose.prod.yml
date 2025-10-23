@@ -26,13 +26,6 @@ services:
         limits:
           memory: 512M
           cpus: '1.00'
-    command: >
-      sh -c "echo '* * * * * cd /var/www && /usr/local/bin/php artisan schedule:run >> /var/www/storage/logs/laravel-scheduler.log 2>&1' > /etc/cron.d/laravel-cron
-      && chmod 0644 /etc/cron.d/laravel-cron
-      && crontab /etc/cron.d/laravel-cron
-      && cron &
-      php artisan queue:work --sleep=1 --tries=3 --timeout=120 &
-      php-fpm"
   # ==========================
   # NGINX SERVER
   # ==========================

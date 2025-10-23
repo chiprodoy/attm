@@ -35,16 +35,16 @@ RUN composer install --optimize-autoloader --no-dev
 # ======================================================
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
-    && npm install && npm run build
+    && npm install && npm run build \
+    && npm cache clean --force
 
 # ======================================================
 #  Permission dan CMD
 # ======================================================
-RUN mkdir -p /etc/crontabs /var/log/cron \
-    && chown -R www-data:www-data /etc/crontabs /var/log/cron \
-    && chmod 777 /etc/crontabs
+RUN mkdir -p /run/php /var/log/supervisor /var/www/storage/logs \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
     
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Copy konfigurasi Supervisor
 COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
