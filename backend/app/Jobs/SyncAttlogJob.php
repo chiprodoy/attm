@@ -16,7 +16,6 @@ class SyncAttlogJob implements ShouldQueue
 
 
     protected $date;
-    private $appLog;
 
     /**
      * Create a new job instance.
@@ -33,23 +32,23 @@ class SyncAttlogJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->appLog = Log::build([
+        $appLog = Log::build([
 
             'driver' => 'daily',
             'path' => storage_path('logs/sync_att_log_job.log'),
 
         ]);
 
-        $this->appLog->info("SyncAttlogJob started for date {$this->date}");
+        $appLog->info("SyncAttlogJob started for date {$this->date}");
 
         try {
             Artisan::call('sync:attlog', [
                 '--date' => $this->date,
             ]);
 
-            $this->appLog->info("SyncAttlogJob finished successfully for date {$this->date}");
+            $appLog->info("SyncAttlogJob finished successfully for date {$this->date}");
         } catch (\Throwable $e) {
-            $this->appLog->error("SyncAttlogJob failed: " . $e->getMessage());
+            $appLog->error("SyncAttlogJob failed: " . $e->getMessage());
         }
     }
 }
