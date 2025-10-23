@@ -3,3 +3,7 @@ node_modules
 vendor
 storage/logs
 .env
+backend/node_modules
+npm-debug.log
+Dockerfile
+docker-compose.yml

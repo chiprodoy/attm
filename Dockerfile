@@ -41,9 +41,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 # ======================================================
 #  Permission dan CMD
 # ======================================================
-RUN mkdir -p /run/php /var/log/supervisor /var/www/storage/logs \
+RUN mkdir -p /var/run /run/php /var/log/supervisor /var/www/storage/logs \
     && chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+    && chmod -R 775 /var/run /var/www/storage /var/www/bootstrap/cache
     
 
 # Copy konfigurasi Supervisor
