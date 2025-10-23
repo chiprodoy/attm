@@ -106,13 +106,14 @@ public function handshake(Request $request)
             // di background
             $date = now()->format('Y-m-d');
             SyncAttlogJob::dispatch($date);
+            $this->appLog()->info('end receive records ');
 
             return "OK: ".$tot;
 
         } catch (\Throwable $e) {
             $data['error'] = $e;
             $this->appLog()->error($e);
-            DB::table('error_log')->insert($data);
+            //DB::table('error_log')->insert($data);
             report($e);
             return "ERROR: ".$tot."\n";
         }
