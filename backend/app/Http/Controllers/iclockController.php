@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AttendanceReceived;
 use App\Jobs\SyncAttlogJob;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
@@ -105,7 +106,9 @@ public function handshake(Request $request)
             // 🔹 Kirim Job ke Queue untuk menjalankan sync:attlog
             // di background
             $date = now()->format('Y-m-d');
-            SyncAttlogJob::dispatch($date);
+                    // ✅ Jalankan event setelah data diterima
+            event(new AttendanceReceived($date));
+
             $this->appLog()->info('end receive records ');
 
             return "OK: ".$tot;
