@@ -57,7 +57,7 @@ public function handshake(Request $request)
         //  "TimeZone=7\r\n" .
          "Realtime=1\r\n" .
          "Encrypt=0";
-
+     $this->appLog()->debug('info handshake response: '.$r);
     return $r;
 }
         //$r = "GET OPTION FROM:%s{$request->SN}\nStamp=".strtotime('now')."\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";

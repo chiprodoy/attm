@@ -49,5 +49,7 @@ RUN mkdir -p /var/run /run/php /var/log/supervisor /var/www/storage/logs \
 # Copy konfigurasi Supervisor
 COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
 # Gunakan supervisord untuk menjalankan php-fpm + queue + cron bersamaan
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
