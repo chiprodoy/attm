@@ -17,6 +17,7 @@ class iclockController extends Controller
         return Log::build([
                 'driver' => 'daily',
                 'path' => storage_path('logs/iclock_controller.log'),
+                'permission' => 0775,
         ]);
     }
 
