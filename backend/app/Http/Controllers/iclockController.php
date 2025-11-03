@@ -29,7 +29,8 @@ class iclockController extends Controller
     // handshake
 public function handshake(Request $request)
 {
-    $this->appLog()->info('Start handshake');
+    $OpStamp = time();
+    $this->appLog()->info('Start handshake time: '.$OpStamp);
     $data = [
         'url' => json_encode($request->all()),
         'data' => $request->getContent(),
@@ -46,7 +47,7 @@ public function handshake(Request $request)
 
     $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
          "Stamp=9999\r\n" .
-         "OpStamp=" . time() . "\r\n" .
+         "OpStamp=" . $OpStamp . "\r\n" .
          "ErrorDelay=60\r\n" .
          "Delay=30\r\n" .
          "ResLogDay=18250\r\n" .
