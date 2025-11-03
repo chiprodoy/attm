@@ -154,7 +154,10 @@ public function handshake(Request $request)
     {
                 $log['url']=json_encode($request->all());
                 $log['data'] = $request->getContent();
-                DB::table('finger_log')->insert($log);
+                $data['time'] =time();
+                $data['timezone'] =date_default_timezone_get();
+                return $data;
+                //DB::table('finger_log')->insert($log);
     }
     public function getrequest(Request $request)
     {
