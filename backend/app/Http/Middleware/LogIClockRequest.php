@@ -43,7 +43,7 @@ class LogIClockRequest
         $this->appLog()->info('Outgoing Response', [
             'status' => $response->getStatusCode(),
             'headers' => $response->headers->all(),
-            // 'body' => $response->getContent(), // Uncomment if you need to log response body
+            'body' => $response->getContent(), // Uncomment if you need to log response body
         ]);
 
         return $response;
