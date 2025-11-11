@@ -29,7 +29,7 @@ class iclockController extends Controller
     // handshake
 public function handshake(Request $request)
 {
-    $OpStamp = time();
+    $OpStamp = time() - 3600;
     $this->appLog()->info('Start handshake time: '.$OpStamp);
     $data = [
         'url' => json_encode($request->all()),
