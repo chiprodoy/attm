@@ -29,7 +29,9 @@ class iclockController extends Controller
     // handshake
 public function handshake(Request $request)
 {
-    $OpStamp = time() - 3600;
+    $unix_timestamp = time() - 3600;
+    $date_object = Carbon::createFromTimestamp($unix_timestamp);
+    $OpStamp = $date_object->setTimeZone('GMT')->format('D, d M Y H:i:s T');
     $this->appLog()->info('Start handshake time: '.$OpStamp);
     $data = [
         'url' => json_encode($request->all()),
@@ -47,7 +49,7 @@ public function handshake(Request $request)
 
     $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
          "Stamp=9999\r\n" .
-         "OpStamp=" . $OpStamp . "\r\n" .
+         "OpStamp=" . $OpStamp . "\r\n" . //todo coba hapus
          "ErrorDelay=60\r\n" .
          "Delay=30\r\n" .
          "ResLogDay=18250\r\n" .
@@ -60,7 +62,10 @@ public function handshake(Request $request)
          "Realtime=1\r\n" .
          "Encrypt=0";
      $this->appLog()->debug('info handshake response: '.$r);
-    return $r;
+        return response($r, 200)
+            ->withHeaders([
+                'Date' => $OpStamp,
+        ]);
 }
         //$r = "GET OPTION FROM:%s{$request->SN}\nStamp=".strtotime('now')."\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";
     // implementasi https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/
