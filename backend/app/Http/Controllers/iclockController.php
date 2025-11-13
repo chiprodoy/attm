@@ -49,7 +49,7 @@ public function handshake(Request $request)
 
     $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
          "Stamp=9999\r\n" .
-         "OpStamp=" . $OpStamp . "\r\n" . //todo coba hapus
+         "OpStamp=" . $unix_timestamp . "\r\n" . //todo coba hapus
          "ErrorDelay=60\r\n" .
          "Delay=30\r\n" .
          "ResLogDay=18250\r\n" .
