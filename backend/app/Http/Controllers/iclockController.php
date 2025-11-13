@@ -61,7 +61,8 @@ public function handshake(Request $request)
         //  "TimeZone=7\r\n" .
          "Realtime=1\r\n" .
          "Encrypt=0";
-     $this->appLog()->debug('info handshake response: '.$r);
+
+        $this->appLog()->debug('info handshake response: '.$r);
         return response($r, 200)
             ->withHeaders([
                 'Date' => $OpStamp,
@@ -74,6 +75,10 @@ public function handshake(Request $request)
     public function receiveRecords(Request $request)
     {
         $this->appLog()->info('start receive record');
+
+        $unix_timestamp = time() - 3600;
+        $date_object = Carbon::createFromTimestamp($unix_timestamp);
+        $OpStamp = $date_object->setTimeZone('GMT')->format('D, d M Y H:i:s T');
 
         //DB::connection()->enableQueryLog();
         $content['url'] = json_encode($request->all());
@@ -95,7 +100,11 @@ public function handshake(Request $request)
                         $tot++;
                     }
                 }
-                return "OK: ".$tot;
+                return response("OK: ".$tot, 200)
+                    ->withHeaders([
+                        'Date' => $OpStamp,
+                ]);
+
             }
             //attendance
             foreach ($arr as $rey) {
@@ -118,14 +127,21 @@ public function handshake(Request $request)
 
             $this->appLog()->info('end receive records ');
 
-            return "OK: ".$tot;
+            return response("OK: ".$tot, 200)
+                    ->withHeaders([
+                        'Date' => $OpStamp,
+            ]);
 
         } catch (\Throwable $e) {
             $data['error'] = $e;
             $this->appLog()->error($e);
             //DB::table('error_log')->insert($data);
             report($e);
-            return "ERROR: ".$tot."\n";
+            return response("ERROR: ".$tot."\n".$tot, 200)
+                  ->withHeaders([
+                       'Date' => $OpStamp,
+            ]);
+
         }
     }
 

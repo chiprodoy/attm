@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
 Route::get('tv',[TVController::class,'index']);
 
 // handshake
-Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
+Route::middleware(['log.iclockrequest'])->get('/iclock/cdata', [iclockController::class, 'handshake']);
 // request dari device
 Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 
