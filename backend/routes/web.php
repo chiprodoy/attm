@@ -44,7 +44,7 @@ Route::middleware(['log.iclockrequest'])->get('/iclock/cdata', [iclockController
 Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 
 Route::get('/iclock/test', [iclockController::class, 'test']);
-Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
 
 require __DIR__.'/auth.php';
