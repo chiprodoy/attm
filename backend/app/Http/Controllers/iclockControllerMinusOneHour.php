@@ -29,7 +29,7 @@ class iclockController extends Controller
     // handshake
 public function handshake(Request $request)
 {
-    $unix_timestamp = time();
+    $unix_timestamp = time() - 3600;
     $date_object = Carbon::createFromTimestamp($unix_timestamp);
     $OpStamp = $date_object->setTimeZone('GMT')->format('D, d M Y H:i:s T');
     $this->appLog()->info('Start handshake time: '.$OpStamp);
@@ -48,19 +48,19 @@ public function handshake(Request $request)
     );
 
     $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
-         // "Stamp=9999\r\n" .
+        //  "Stamp=9999\r\n" .
         //  "OpStamp=" . $unix_timestamp . "\r\n" . //todo coba hapus
-          "ErrorDelay=60\r\n" .
-          "Delay=30\r\n" .
+        //  "ErrorDelay=60\r\n" .
+        //  "Delay=30\r\n" .
         //  "ResLogDay=18250\r\n" .
         //  "ResLogDelCount=10000\r\n" .
         //  "ResLogCount=50000\r\n" .
-          "TransTimes=00:00;14:05\r\n" .
-          "TransInterval=1\r\n" .
-          "TransFlag=1111000000\r\n" .
-          "TimeZone=+07:00\r\n" .
-          "Realtime=1\r\n" .
-          "Encrypt=0";
+        //  "TransTimes=00:00;14:05\r\n" .
+        //  "TransInterval=1\r\n" .
+        //  "TransFlag=1111000000\r\n" .
+        // //  "TimeZone=7\r\n" .
+        //  "Realtime=1\r\n" .
+         "Encrypt=0";
 
         $this->appLog()->debug('info handshake response: '.$r);
         return response($r, 200)
@@ -76,7 +76,7 @@ public function handshake(Request $request)
     {
         $this->appLog()->info('start receive record');
 
-        $unix_timestamp = time();
+        $unix_timestamp = time() - 3600;
         $date_object = Carbon::createFromTimestamp($unix_timestamp);
         $OpStamp = $date_object->setTimeZone('GMT')->format('D, d M Y H:i:s T');
 
@@ -182,7 +182,7 @@ public function handshake(Request $request)
     }
     public function getrequest(Request $request)
     {
-        $unix_timestamp = time();
+                $unix_timestamp = time() - 3600;
         $date_object = Carbon::createFromTimestamp($unix_timestamp);
         $OpStamp = $date_object->setTimeZone('GMT')->format('D, d M Y H:i:s T');
         // $r = "GET OPTION FROM: ".$request->SN."\nStamp=".strtotime('now')."\nOpStamp=".strtotime('now')."\nErrorDelay=60\nDelay=30\nResLogDay=18250\nResLogDelCount=10000\nResLogCount=50000\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nRealtime=1\nEncrypt=0";
