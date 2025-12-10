@@ -13,6 +13,8 @@ class LogIClockRequest
                 'driver' => 'daily',
                 'path' => storage_path('logs/iclock_request.log'),
                 'permission' => 0775,
+                'days' => 2,
+
         ]);
     }
     /**

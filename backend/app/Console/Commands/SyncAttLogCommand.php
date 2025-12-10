@@ -52,6 +52,7 @@ class SyncAttLogCommand extends Command
 
             'driver' => 'daily',
             'path' => storage_path('logs/sync_att_log_command.log'),
+            'days' => 2,
 
         ]);
 

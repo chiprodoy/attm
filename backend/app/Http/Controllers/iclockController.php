@@ -18,6 +18,8 @@ class iclockController extends Controller
                 'driver' => 'daily',
                 'path' => storage_path('logs/iclock_controller.log'),
                 'permission' => 0775,
+                'days' => 2,
+
         ]);
     }
 
