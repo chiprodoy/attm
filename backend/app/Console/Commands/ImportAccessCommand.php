@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Employee;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,6 +72,9 @@ class ImportAccessCommand extends Command
                 case 'userinfo':
                     $this->insertUserInfo($data);
                     break;
+                case 'num_run':
+                    $this->insertNumRun($data);
+                    break;
                 // Tambahkan case lain jika ada model lain
                 default:
                     $this->error("Model tidak dikenali: $tableName");
@@ -89,6 +93,13 @@ class ImportAccessCommand extends Command
     private function insertUserInfo($data){
         Employee::updateOrCreate(
             ['USERID' => $data['USERID']],
+            $data
+        );
+    }
+
+    private function insertNumRun($data){
+        DB::connection('attdb')->table('num_run')->updateOrInsert(
+            ['NUM_RUNID' => $data['NUM_RUNID']],
             $data
         );
     }
