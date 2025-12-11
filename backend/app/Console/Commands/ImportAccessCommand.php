@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Employee;
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
@@ -10,8 +11,7 @@ class ImportAccessCommand extends Command
 {
     protected $signature = 'import:access
                             {mdbfile : Path file MDB}
-                            {table : Nama tabel dalam Access}
-                            {tagetModel : Model Eloquent untuk import}';
+                            {table : Nama tabel dalam Access}';
 
     protected $description = 'Import data dari MS Access MDB ke MySQL';
 
@@ -19,7 +19,6 @@ class ImportAccessCommand extends Command
     {
         $mdbFile = $this->argument('mdbfile');
         $tableName = $this->argument('table');
-        $tagetModel = $this->argument('tagetModel');
 
         if (!file_exists($mdbFile)) {
             $this->error("File tidak ditemukan: $mdbFile");
@@ -68,9 +67,15 @@ class ImportAccessCommand extends Command
             $data = array_combine($headers, $row);
 
             // Sesuaikan ke model Anda
-            $tagetModel::updateOrCreate(
-                $data
-            );
+            switch ($tableName) {
+                case 'userinfo':
+                    $this->insertUserInfo($data);
+                    break;
+                // Tambahkan case lain jika ada model lain
+                default:
+                    $this->error("Model tidak dikenali: $tableName");
+                    return 1;
+            }
 
             $count++;
         }
@@ -80,7 +85,11 @@ class ImportAccessCommand extends Command
         $this->info("Import selesai. Total: $count baris.");
         return 0;
     }
-    public function insertEmployee(){
 
+    private function insertUserInfo($data){
+        Employee::updateOrCreate(
+            ['USERID' => $data['USERID']],
+            $data
+        );
     }
 }
