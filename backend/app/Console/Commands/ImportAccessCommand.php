@@ -64,7 +64,7 @@ class ImportAccessCommand extends Command
         $count = 0;
 
         while (($row = fgetcsv($file)) !== false) {
-            $data = array_combine($headers, $row);
+            $data = array_filter(array_combine($headers, $row));
 
             // Sesuaikan ke model Anda
             switch ($tableName) {

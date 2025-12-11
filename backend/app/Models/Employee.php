@@ -13,7 +13,8 @@ class Employee extends Model
     protected $connection = 'attdb'; // Use default connection
 
     protected $table = 'userinfo';
-
+    protected $guarded = [];
+    public $timestamps = false;
     /**
      * The primary key for the model.
      *
