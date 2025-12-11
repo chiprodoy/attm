@@ -104,6 +104,9 @@ class ImportAccessCommand extends Command
         );
     }
     private function insertUserOfRun($data){
+        $data['STARTDATE'] = Carbon::createFromFormat('m/d/y H:i:s', $data['STARTDATE'])->format('Y-m-d H:i:s');
+        $data['ENDDATE'] = Carbon::createFromFormat('m/d/y H:i:s', $data['ENDDATE'])->format('Y-m-d H:i:s');
+
         DB::connection('attdb')->table('user_of_run')->updateOrInsert(
             ['USERID' => $data['USERID']],
             $data
