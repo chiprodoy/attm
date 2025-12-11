@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Employee;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
@@ -98,6 +99,10 @@ class ImportAccessCommand extends Command
     }
 
     private function insertNumRun($data){
+        // Create a Carbon instance from the specific input format
+        $data['STARTDATE'] = Carbon::createFromFormat('m/d/y H:i:s', $data['STARTDATE'])->format('Y-m-d H:i:s');
+        $data['ENDDATE'] = Carbon::createFromFormat('m/d/y H:i:s', $data['ENDDATE'])->format('Y-m-d H:i:s');
+
         DB::connection('attdb')->table('num_run')->updateOrInsert(
             ['NUM_RUNID' => $data['NUM_RUNID']],
             $data
