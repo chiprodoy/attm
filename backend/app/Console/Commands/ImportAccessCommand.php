@@ -76,6 +76,12 @@ class ImportAccessCommand extends Command
                 case 'num_run':
                     $this->insertNumRun($data);
                     break;
+                case 'num_run_deil':
+                    $this->insertNumRunDeil($data);
+                    break;
+                case 'user_of_run':
+                    $this->insertUserOfRun($data);
+                    break;
                 // Tambahkan case lain jika ada model lain
                 default:
                     $this->error("Model tidak dikenali: $tableName");
@@ -86,13 +92,19 @@ class ImportAccessCommand extends Command
         }
 
         fclose($file);
-
+        $this->removeCsv($csvPath);
         $this->info("Import selesai. Total: $count baris.");
         return 0;
     }
 
     private function insertUserInfo($data){
         Employee::updateOrCreate(
+            ['USERID' => $data['USERID']],
+            $data
+        );
+    }
+    private function insertUserOfRun($data){
+        DB::connection('attdb')->table('user_of_run')->updateOrInsert(
             ['USERID' => $data['USERID']],
             $data
         );
@@ -107,5 +119,23 @@ class ImportAccessCommand extends Command
             ['NUM_RUNID' => $data['NUM_RUNID']],
             $data
         );
+    }
+    private function insertNumRunDeil($data){
+        DB::connection('attdb')->table('num_run_deil')->updateOrInsert(
+            ['NUM_RUNDEILID' => $data['NUM_RUNDEILID']],
+            $data
+        );
+    }
+
+    private function removeCsv($csvPath){
+        // ============================================
+        // 3. Hapus file CSV setelah selesai
+        // ============================================
+        if (file_exists($csvPath)) {
+            unlink($csvPath);
+            $this->info("File CSV dihapus → $csvPath");
+        } else {
+            $this->warn("CSV sudah tidak ada, tidak perlu dihapus.");
+        }
     }
 }
