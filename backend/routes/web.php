@@ -46,5 +46,10 @@ Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockControlle
 Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
+// routes upload mdb file
+Route::post('/import-mdb', [\App\Http\Controllers\MDBUploadController::class, 'store'])
+    ->name('mdb.upload');
+
+Route::get('/import-mdb', [\App\Http\Controllers\MDBUploadController::class,'create'])->name('mdb.form');
 
 require __DIR__.'/auth.php';
