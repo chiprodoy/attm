@@ -116,7 +116,7 @@ export default function DashboardTV() {
                     <th className="p-2">Nama Pegawai</th>
                     <th className="p-2">Departemen</th>
                     <th className="p-2">Jam Masuk</th>
-                    <th className="p-2">Status MCU</th>
+                    <th className="p-2">Status DCU</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,7 +129,7 @@ export default function DashboardTV() {
                         <td className="p-2 text-orange-400 font-bold">
                             { formatDate(new Date(emp.check_log_in))}
                         </td>
-                        <td className="p-2">{emp.has_mcu ? 'Sudah MCU' : 'Belum MCU'}</td>
+                        <td className="p-2">{emp.has_mcu ? 'Sudah DCU' : 'Belum DCU'}</td>
                     </tr>
                     ))}
                 </tbody>
@@ -145,7 +145,7 @@ export default function DashboardTV() {
                     <th className="p-2">Nama Pegawai</th>
                     <th className="p-2">Departemen</th>
                     <th className="p-2">Jam Pulang</th>
-                    <th className="p-2">Status MCU</th>
+                    <th className="p-2">Status DCU</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -156,7 +156,7 @@ export default function DashboardTV() {
                         <td className="p-2">{emp.employee.Name}</td>
                         <td className="p-2">{emp.departement_name}</td>
                         <td className="p-2 text-orange-400 font-bold">{formatDate(new Date(emp.check_log_out))}</td>
-                        <td className="p-2">{emp.has_mcu ? 'Sudah MCU' : 'Belum MCU'}</td>
+                        <td className="p-2">{emp.has_mcu ? 'Sudah DCU' : 'Belum DCU'}</td>
                     </tr>
                     ))}
                 </tbody>
@@ -172,7 +172,7 @@ export default function DashboardTV() {
                 <th className="p-2">Nama Pegawai</th>
                 <th className="p-2">Departemen</th>
                 <th className="p-2">Jam</th>
-                <th className="p-2">Status MCU</th>
+                <th className="p-2">Status DCU</th>
                 </tr>
             </thead>
             <tbody>
@@ -183,7 +183,7 @@ export default function DashboardTV() {
                     <td className="p-2">{emp.Name}</td>
                     <td className="p-2">{emp.departement_name}</td>
                     <td className="p-2 text-orange-400 font-bold">{emp.CHECKTIME}</td>
-                    <td className="p-2">{emp.has_mcu ? 'Sudah MCU' : 'Belum MCU'}</td>
+                    <td className="p-2">{emp.has_mcu ? 'Sudah DCU' : 'Belum DCU'}</td>
                 </tr>
                 ))}
             </tbody>
@@ -224,7 +224,7 @@ export default function DashboardTV() {
                 <th className="p-2">NIP</th>
                 <th className="p-2">Nama Pegawai</th>
                 {/* <th className="p-2">Departemen</th> */}
-                <th className="p-2">Status MCU</th>
+                <th className="p-2">Status DCU</th>
                 </tr>
             </thead>
             <tbody>
@@ -234,7 +234,7 @@ export default function DashboardTV() {
                     <td className="p-2">{emp.employee.ssn}</td>
                     <td className="p-2">{emp.employee.Name}</td>
                     {/* <td className="p-2">{emp.employee.departement_name}</td> */}
-                    <td className="p-2">{emp.has_mcu ? 'Sudah MCU' : 'Belum MCU'}</td>
+                    <td className="p-2">{emp.has_mcu ? 'Sudah DCU' : 'Belum DCU'}</td>
                 </tr>
                 ))}
             </tbody>

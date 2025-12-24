@@ -38,7 +38,7 @@ export default function MedicalCheckup({ auth }) {
       setEmployee({ ...employee, mcu_status: true });
     } catch (err) {
       console.error(err);
-      alert('Gagal menyimpan status MCU.');
+      alert('Gagal menyimpan status DCU.');
     }
   };
 
@@ -75,14 +75,14 @@ export default function MedicalCheckup({ auth }) {
             <div className="bg-white shadow p-4 rounded">
             <p><strong>NIP:</strong> {employee.nip}</p>
             <p><strong>Nama:</strong> {employee.name}</p>
-            <p><strong>Status MCU:</strong> {employee.mcu_status == false ? 'Belum MCU' : 'Sudah MCU'}</p>
+            <p><strong>Status DCU:</strong> {employee.mcu_status == false ? 'Belum DCU' : 'Sudah DCU'}</p>
 
             {employee.mcu_status == false && (
                 <button
                 onClick={handleSetMCU}
                 className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
                 >
-                Set MCU Selesai
+                Set DCU Selesai
                 </button>
             )}
             </div>
