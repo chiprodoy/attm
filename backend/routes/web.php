@@ -47,4 +47,5 @@ Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
 
-require __DIR__.'/auth.php';
+require __DIR__.'/auth.php'; 
+
