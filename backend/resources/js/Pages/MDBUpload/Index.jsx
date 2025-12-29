@@ -48,7 +48,7 @@ export default function ImportMDB({ auth }) {
                     >
         <div className="p-6 bg-white rounded shadow max-w-lg mx-auto mt-8">
             <h2 className="text-xl font-bold mb-4">Import Database MS Access (.mdb)</h2>
-            <div className="warning">Pastikan Mesin absensi telah diputus koneksinya dari jaringan, sebelum mengimport file</div>
+            <div className="alert alert-warning">Pastikan Mesin absensi telah diputus koneksinya dari jaringan, sebelum mengimport file</div>
             <form onSubmit={handleUpload} className="space-y-4">
 
                 <div>
