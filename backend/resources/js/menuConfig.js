@@ -4,7 +4,7 @@ export const menuConfig = {
     { name: "Dashboard", route: "dashboard" },
     { name: "Cuti & Izin", route: "leave.index" },
     { name: "DCU", route: "mcu.index" },
-    { name: "Import", route: "mdb.index" },
+    { name: "Import", route: "mdb.upload.index" },
 
     { name: "User Management", route: "users.index" },
    // { name: "Reports", route: "reports.index" },
