@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function ImportMDB() {
     const [file, setFile] = useState(null);
