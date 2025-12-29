@@ -14,7 +14,7 @@ class MDBUploadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'mdb_file' => 'required|file|mimes:mdb|max:10240', // max 10MB
+            'mdb_file' => 'required|file|mimes:mdb|max:50240', // max 10MB
             'table' => 'required|string',
         ]);
 

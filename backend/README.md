@@ -80,5 +80,12 @@ WHERE NUM_RUNID = 3
  -- WHERE NUM_RUNID = 3
  AND MOD(DATEDIFF('2025-04-13', num_run.STARTDATE), IF(num_run.UNITS=1,7,num_run.UNITS) ) BETWEEN SDAYS AND EDAYS;
 
- 
+sudo nano /etc/nginx/sites-available/default
+ client_max_body_size 50M;
 
+Illuminate\Http\Exceptions\PostTooLargeException
+
+sudo nano /etc/php/8.1/fpm/php.ini
+upload_max_filesize = 50M
+post_max_size = 50M
+memory_limit = 128M ; memory_limit should be greater than post_max_size
