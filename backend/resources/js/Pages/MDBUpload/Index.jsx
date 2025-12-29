@@ -24,7 +24,7 @@ export default function ImportMDB({ auth }) {
         setStatus("Uploading...");
 
         try {
-            const response = await axios.post(route("mdb.upload"), formData, {
+            const response = await axios.post(route("mdb.upload.store"), formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
