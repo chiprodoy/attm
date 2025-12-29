@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         //$schedule->command('sync:attlog',['--date'=>'2025-08-01'])->everySecond();
         $schedule->command('ecls:init')->dailyAt('00:01');
+        $schedule->command('app:clearlogs')->dailyAt('23:58'); // Runs once a day
        // $schedule->command('sync:attlog',['--date'=>Carbon::today()->toDateString()])->everyMinute();
 
     }
