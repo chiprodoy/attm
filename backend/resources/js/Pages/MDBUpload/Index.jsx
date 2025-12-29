@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Link, usePage, router } from '@inertiajs/react';
+
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function ImportMDB() {
+export default function ImportMDB({ auth }) {
     const [file, setFile] = useState(null);
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState("");
