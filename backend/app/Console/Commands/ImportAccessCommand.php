@@ -6,6 +6,7 @@ use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,13 +18,23 @@ class ImportAccessCommand extends Command
 
     protected $description = 'Import data dari MS Access MDB ke MySQL';
 
+    private $appLog;
+
     public function handle()
     {
+        $this->appLog = Log::build([
+
+            'driver' => 'daily',
+            'path' => storage_path('logs/import_access_command.log'),
+            'days' => 2,
+        ]);
+
         $mdbFile = $this->argument('mdbfile');
         $tableName = $this->argument('table');
 
         if (!file_exists($mdbFile)) {
-            $this->error("File tidak ditemukan: $mdbFile");
+
+            $this->appLog->error("File tidak ditemukan: $mdbFile");
             return 1;
         }
 
@@ -32,7 +43,7 @@ class ImportAccessCommand extends Command
         // ================
         // 1. Jalankan mdb-export
         // ================
-        $this->info("Mengekspor tabel [$tableName] dari [$mdbFile] ...");
+        $this->appLog->info("Mengekspor tabel [$tableName] dari [$mdbFile] ...");
 
         $process = new Process([
             'mdb-export',
@@ -43,20 +54,20 @@ class ImportAccessCommand extends Command
         $process->run();
 
         if (!$process->isSuccessful()) {
-            $this->error("Gagal menjalankan mdb-export:");
-            $this->error($process->getErrorOutput());
+            $this->appLog->error("Gagal menjalankan mdb-export:");
+            $this->appLog->error($process->getErrorOutput());
             return 1;
         }
 
         // simpan output CSV
         file_put_contents($csvPath, $process->getOutput());
 
-        $this->info("Export selesai → $csvPath");
+        $this->appLog->info("Export selesai → $csvPath");
 
         // ================
         // 2. Import CSV ke MySQL
         // ================
-        $this->info("Mengimpor data ke MySQL...");
+        $this->appLog->info("Mengimpor data ke MySQL...");
 
         $file = fopen($csvPath, 'r');
 
