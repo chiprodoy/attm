@@ -15,7 +15,6 @@ class MDBUploadController extends Controller
     {
         $request->validate([
             'mdb_file' => 'required|file|mimes:mdb|max:50240', // max 10MB
-            'table' => 'required|string',
         ]);
 
         $path = $request->file('mdb_file')->store('mdb_uploads');
