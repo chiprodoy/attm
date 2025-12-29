@@ -19,7 +19,11 @@ class MDBUploadController extends Controller
             'mdb_file' => 'required|file|mimes:mdb|max:50240', // max 10MB
         ]);
 
-        $path = $request->file('mdb_file')->store('mdb_uploads');
+        $file = $request->file('mdb_file');
+
+        $filename = time().'_'.$file->getClientOriginalName();
+
+        $path = $file->storeAs('mdb_uploads', $filename);
 
         foreach($this->requestTable as $k =>$v){
             Log::info("Menjalankan import untuk tabel: $v dari file: $path");
