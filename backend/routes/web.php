@@ -3,6 +3,7 @@
 use App\Http\Controllers\iclockController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\MCUController;
+use App\Http\Controllers\MDBUploadController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TVController;
 use App\Http\Controllers\UserController;
@@ -46,6 +47,11 @@ Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockControlle
 Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
+Route::post('/upload-mdb', [MDBUploadController::class, 'store'])
+    ->name('mdb.upload.store');
+
+Route::get('/upload-mdb', [MDBUploadController::class, 'index'])
+    ->name('mdb.upload.index');
 
 require __DIR__.'/auth.php';
 
