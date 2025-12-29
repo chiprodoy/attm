@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Symfony\Component\Process\Process;
@@ -20,16 +22,12 @@ class MDBUploadController extends Controller
         $path = $request->file('mdb_file')->store('mdb_uploads');
 
         foreach($this->requestTable as $k =>$v){
+            Log::info("Menjalankan import untuk tabel: $v dari file: $path");
             // Jalankan command import
-                $process = new Process([
-                    'php',
-                    base_path('artisan'),
-                    'import:access',
-                    storage_path('app/' . $path),
-                    $request->table,
-                ]);
-
-                $process->start();
+            Artisan::call('import:access', [
+                'mdbfile' => storage_path('app/' . $path),
+                'table' => $v,
+            ]);
         }
 
         return response()->json([
