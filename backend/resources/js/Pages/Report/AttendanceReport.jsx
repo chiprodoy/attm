@@ -20,6 +20,10 @@ export default function AttendanceReport() {
     };
 
     return (
+               <AuthenticatedLayout
+                                user={auth.user}
+                                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
+                            >
         <div className="container py-3">
             <h4 className="mb-3">Laporan Kehadiran</h4>
 
@@ -131,5 +135,6 @@ export default function AttendanceReport() {
                 </div>
             </div>
         </div>
+        </AuthenticatedLayout>
     );
 }
