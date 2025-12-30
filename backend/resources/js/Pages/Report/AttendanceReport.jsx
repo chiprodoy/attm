@@ -19,7 +19,20 @@ export default function AttendanceReport({auth}) {
             { preserveState: true, replace: true }
         );
     };
+    const formatDate = (value) => {
+        if (!value) return '-';
+        return new Date(value).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        });
+    };
 
+    const formatTime = (value) => {
+        if (!value) return '-';
+        return value.substring(11, 19); // HH:mm:ss
+    };
+    const safe = (val, cb) => (val ? cb(val) : '-');
     return (
                 <AuthenticatedLayout
                             user={auth.user}
@@ -112,11 +125,11 @@ export default function AttendanceReport({auth}) {
                         <tbody className="divide-y">
                             {logs.data.map((row) => (
                                 <tr key={row.id} className="hover:bg-gray-50">
-                                    <td className="td">{row.checklog_time}</td>
+                                    <td className="td">{safe(row.checklog_time, formatDate)}</td>
                                     <td className="td">{row.employee_name || '-'}</td>
                                     <td className="td">{row.departement_name}</td>
-                                    <td className="td">{row.check_log_in}</td>
-                                    <td className="td">{row.check_log_out}</td>
+                                    <td className="td">{safe(row.check_log_in, formatTime)}</td>
+                                    <td className="td">{safe(row.check_log_out, formatTime)}</td>
                                     <td className="td">{row.late} mnt</td>
                                     <td className="td">{row.overtime} mnt</td>
                                     <td className="td">
