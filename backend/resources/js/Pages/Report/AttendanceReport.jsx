@@ -1,8 +1,7 @@
-import React, { useState } from "react";
 import { router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function AttendanceReport({ auth }) {
+export default function AttendanceReport({auth}) {
     const { logs, filters } = usePage().props;
 
     const updateFilter = (e) => {
@@ -22,92 +21,112 @@ export default function AttendanceReport({ auth }) {
     };
 
     return (
-               <AuthenticatedLayout
-                                user={auth.user}
-                                header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
-                            >
-        <div className="container py-3">
-            <h4 className="mb-3">Laporan Kehadiran</h4>
+                <AuthenticatedLayout
+                            user={auth.user}
+                            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Daftar Izin / Cuti / Sakit</h2>}
+                        >
+        <div className="p-6 space-y-6">
+            {/* HEADER */}
+            <h1 className="text-xl font-semibold text-gray-800">
+                Laporan Kehadiran
+            </h1>
 
             {/* FILTER */}
-            <div className="card mb-3">
-                <div className="card-body row g-2">
-                    <div className="col-md-2">
-                        <input type="date" name="start_date" className="form-control"
-                            defaultValue={filters.start_date}
-                            onChange={updateFilter} />
-                    </div>
+            <div className="bg-white rounded-lg shadow p-4">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+                    <input
+                        type="date"
+                        name="start_date"
+                        defaultValue={filters.start_date}
+                        onChange={updateFilter}
+                        className="input"
+                    />
 
-                    <div className="col-md-2">
-                        <input type="date" name="end_date" className="form-control"
-                            defaultValue={filters.end_date}
-                            onChange={updateFilter} />
-                    </div>
+                    <input
+                        type="date"
+                        name="end_date"
+                        defaultValue={filters.end_date}
+                        onChange={updateFilter}
+                        className="input"
+                    />
 
-                    <div className="col-md-2">
-                        <select name="check_type" className="form-control"
-                            defaultValue={filters.check_type}
-                            onChange={updateFilter}>
-                            <option value="">Check Type</option>
-                            <option value="0">Normal</option>
-                            <option value="1">Shift</option>
-                        </select>
-                    </div>
+                    <select
+                        name="check_type"
+                        defaultValue={filters.check_type}
+                        onChange={updateFilter}
+                        className="input"
+                    >
+                        <option value="">Check Type</option>
+                        <option value="0">Normal</option>
+                        <option value="1">Shift</option>
+                    </select>
 
-                    <div className="col-md-2">
-                        <select name="check_log_status" className="form-control"
-                            defaultValue={filters.check_log_status}
-                            onChange={updateFilter}>
-                            <option value="">Status</option>
-                            <option value="1">Hadir</option>
-                            <option value="0">Tidak Hadir</option>
-                        </select>
-                    </div>
+                    <select
+                        name="check_log_status"
+                        defaultValue={filters.check_log_status}
+                        onChange={updateFilter}
+                        className="input"
+                    >
+                        <option value="">Status</option>
+                        <option value="1">Hadir</option>
+                        <option value="0">Tidak Hadir</option>
+                    </select>
 
-                    <div className="col-md-2">
-                        <input type="text" name="employee" placeholder="Nama Pegawai"
-                            defaultValue={filters.employee}
-                            className="form-control"
-                            onChange={updateFilter} />
-                    </div>
+                    <input
+                        type="text"
+                        name="employee"
+                        placeholder="Nama Pegawai"
+                        defaultValue={filters.employee}
+                        onChange={updateFilter}
+                        className="input"
+                    />
 
-                    <div className="col-md-2">
-                        <input type="text" name="department" placeholder="Departemen"
-                            defaultValue={filters.department}
-                            className="form-control"
-                            onChange={updateFilter} />
-                    </div>
+                    <input
+                        type="text"
+                        name="department"
+                        placeholder="Departemen"
+                        defaultValue={filters.department}
+                        onChange={updateFilter}
+                        className="input"
+                    />
                 </div>
             </div>
 
             {/* TABLE */}
-            <div className="card">
-                <div className="card-body table-responsive">
-                    <table className="table table-bordered table-sm">
-                        <thead>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm text-left">
+                        <thead className="bg-gray-100 text-gray-700">
                             <tr>
-                                <th>Tanggal</th>
-                                <th>Nama</th>
-                                <th>Departemen</th>
-                                <th>Check In</th>
-                                <th>Check Out</th>
-                                <th>Late</th>
-                                <th>OT</th>
-                                <th>Status</th>
+                                <th className="th">Tanggal</th>
+                                <th className="th">Nama</th>
+                                <th className="th">Departemen</th>
+                                <th className="th">Check In</th>
+                                <th className="th">Check Out</th>
+                                <th className="th">Late</th>
+                                <th className="th">OT</th>
+                                <th className="th">Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {logs.data.map(row => (
-                                <tr key={row.id}>
-                                    <td>{row.checklog_time}</td>
-                                    <td>{row.employee_name || '-'}</td>
-                                    <td>{row.departement_name}</td>
-                                    <td>{row.check_log_in}</td>
-                                    <td>{row.check_log_out}</td>
-                                    <td>{row.late} mnt</td>
-                                    <td>{row.overtime} mnt</td>
-                                    <td>
-                                        <span className={`badge ${row.check_log_status ? 'bg-success' : 'bg-danger'}`}>
+
+                        <tbody className="divide-y">
+                            {logs.data.map((row) => (
+                                <tr key={row.id} className="hover:bg-gray-50">
+                                    <td className="td">{row.checklog_time}</td>
+                                    <td className="td">{row.employee_name || '-'}</td>
+                                    <td className="td">{row.departement_name}</td>
+                                    <td className="td">{row.check_log_in}</td>
+                                    <td className="td">{row.check_log_out}</td>
+                                    <td className="td">{row.late} mnt</td>
+                                    <td className="td">{row.overtime} mnt</td>
+                                    <td className="td">
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-semibold
+                                                ${row.check_log_status
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-red-100 text-red-700'
+                                                }`}
+                                        >
                                             {row.check_log_status ? 'Hadir' : 'Tidak'}
                                         </span>
                                     </td>
@@ -115,25 +134,29 @@ export default function AttendanceReport({ auth }) {
                             ))}
                         </tbody>
                     </table>
+                </div>
 
-                    {/* PAGINATION */}
-                    <div className="d-flex justify-content-between align-items-center">
-                        <button
-                            className="btn btn-sm btn-secondary"
-                            disabled={!logs.prev_page_url}
-                            onClick={() => changePage(logs.current_page - 1)}>
-                            Prev
-                        </button>
+                {/* PAGINATION */}
+                <div className="flex items-center justify-between p-4">
+                    <button
+                        disabled={!logs.prev_page_url}
+                        onClick={() => changePage(logs.current_page - 1)}
+                        className="btn-secondary disabled:opacity-40"
+                    >
+                        Prev
+                    </button>
 
-                        <span>Page {logs.current_page} / {logs.last_page}</span>
+                    <span className="text-sm text-gray-600">
+                        Page {logs.current_page} / {logs.last_page}
+                    </span>
 
-                        <button
-                            className="btn btn-sm btn-secondary"
-                            disabled={!logs.next_page_url}
-                            onClick={() => changePage(logs.current_page + 1)}>
-                            Next
-                        </button>
-                    </div>
+                    <button
+                        disabled={!logs.next_page_url}
+                        onClick={() => changePage(logs.current_page + 1)}
+                        className="btn-secondary disabled:opacity-40"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
