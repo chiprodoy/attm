@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceReportController;
 use App\Http\Controllers\iclockController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\MCUController;
@@ -35,6 +36,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('users', UserController::class);
+
+    /* MDB Upload Routes */
+    Route::post('/upload-mdb', [MDBUploadController::class, 'store'])
+    ->name('mdb.upload.store');
+
+    Route::get('/upload-mdb', [MDBUploadController::class, 'index'])
+        ->name('mdb.upload.index');
+
+    Route::get('/reports/attendance', [AttendanceReportController::class, 'index'])
+    ->name('reports.attendance');
 });
 
 Route::get('tv',[TVController::class,'index']);
@@ -47,11 +58,7 @@ Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockControlle
 Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
-Route::post('/upload-mdb', [MDBUploadController::class, 'store'])
-    ->name('mdb.upload.store');
 
-Route::get('/upload-mdb', [MDBUploadController::class, 'index'])
-    ->name('mdb.upload.index');
 
 require __DIR__.'/auth.php';
 

@@ -7,7 +7,7 @@ export const menuConfig = {
     { name: "Import", route: "mdb.upload.index" },
 
     { name: "User Management", route: "users.index" },
-   // { name: "Reports", route: "reports.index" },
+    { name: "Laporan Per Tanggal", route: "reports.attendance" },
   ],
   hrd: [
     { name: "Dashboard", route: "dashboard" },
