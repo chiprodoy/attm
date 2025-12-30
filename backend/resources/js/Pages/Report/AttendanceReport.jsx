@@ -1,6 +1,8 @@
+import React, { useState } from "react";
 import { router, usePage } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function AttendanceReport() {
+export default function AttendanceReport({ auth }) {
     const { logs, filters } = usePage().props;
 
     const updateFilter = (e) => {
