@@ -40,7 +40,7 @@ class AttendanceReportController extends Controller
 
         if ($request->filled('employee')) {
                 $query->whereHas('employee', function ($q) use ($request) {
-                    $q->where('Name', 'likes', '%' . $request->employee . '%');
+                    $q->where('Name', 'like', '%' . $request->employee . '%');
                 });
       }
 
