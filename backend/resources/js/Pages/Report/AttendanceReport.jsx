@@ -33,7 +33,7 @@ export default function AttendanceReport({auth}) {
         return value.substring(11, 19); // HH:mm:ss
     };
     const safe = (val, cb) => (val ? cb(val) : '-');
-    console.log(logs);
+
     return (
                 <AuthenticatedLayout
                             user={auth.user}
