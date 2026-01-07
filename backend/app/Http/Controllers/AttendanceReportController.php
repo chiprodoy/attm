@@ -39,7 +39,9 @@ class AttendanceReportController extends Controller
         }
 
         if ($request->filled('employee')) {
-            $query->whereRelation('employee','Name', 'like', '%' . $request->employee . '%');
+                $query->whereHas('employee', function ($q) use ($request) {
+                    $q->where('Name', 'like', '%' . $request->employee . '%');
+                });
         }
 
         if ($request->filled('department')) {
