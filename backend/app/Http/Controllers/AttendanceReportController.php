@@ -29,7 +29,7 @@ class AttendanceReportController extends Controller
         )
         ->select(
             'att_logs.*',
-            'u.Name',   // ← pastikan kolom ini benar
+            'u.Name as employee_name',   // ← pastikan kolom ini benar
             'u.Badgenumber'
         );
         // ===================== FILTER =====================
