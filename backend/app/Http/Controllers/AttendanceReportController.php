@@ -20,7 +20,7 @@ class AttendanceReportController extends Controller
             'department',
         ]);
 
-        $query = AttLog::query();
+        $query = AttLog::with('employee');
 
         // ===================== FILTER =====================
         if ($request->filled(['start_date', 'end_date'])) {
