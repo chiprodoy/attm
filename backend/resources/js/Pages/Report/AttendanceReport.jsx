@@ -64,7 +64,7 @@ export default function AttendanceReport({auth}) {
                         className="input"
                     />
 
-                    <select
+                    {/* <select
                         name="check_type"
                         defaultValue={filters.check_type}
                         onChange={updateFilter}
@@ -73,7 +73,7 @@ export default function AttendanceReport({auth}) {
                         <option value="">Check Type</option>
                         <option value="0">Normal</option>
                         <option value="1">Shift</option>
-                    </select>
+                    </select> */}
 
                     <select
                         name="check_log_status"
