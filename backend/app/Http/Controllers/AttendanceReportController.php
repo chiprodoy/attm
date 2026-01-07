@@ -47,7 +47,7 @@ class AttendanceReportController extends Controller
         if ($request->filled('department')) {
             $query->where('departement_name', 'like', '%' . $request->department . '%');
         }
-
+dd($query->toSql(), $query->getBindings());
         $logs = $query
             ->orderByDesc('checklog_time')
             ->paginate(20)
