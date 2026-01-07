@@ -20,8 +20,18 @@ class AttendanceReportController extends Controller
             'department',
         ]);
 
-        $query = AttLog::with('employee');
-
+     $query = AttLog::query()
+        ->leftJoin(
+            DB::raw('attdb.userinfo as u'),
+            'u.USERID',
+            '=',
+            'att_logs.USERID'
+        )
+        ->select(
+            'att_logs.*',
+            'u.Name',   // ← pastikan kolom ini benar
+            'u.Badgenumber'
+        );
         // ===================== FILTER =====================
         if ($request->filled(['start_date', 'end_date'])) {
             $query->whereBetween('checklog_time', [
@@ -39,15 +49,13 @@ class AttendanceReportController extends Controller
         }
 
         if ($request->filled('employee')) {
-                $query->whereHas('employee', function ($q) use ($request) {
-                    $q->where('Name', 'like', '%' . $request->employee . '%');
-                });
-      }
+            $query->where('u.Name', 'like', '%' . trim($request->employee) . '%');
+        }
 
         if ($request->filled('department')) {
             $query->where('departement_name', 'like', '%' . $request->department . '%');
         }
-dd($query->toSql(), $query->getBindings());
+
         $logs = $query
             ->orderByDesc('checklog_time')
             ->paginate(20)
