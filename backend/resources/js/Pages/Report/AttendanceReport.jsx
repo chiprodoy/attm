@@ -117,8 +117,8 @@ export default function AttendanceReport({auth}) {
                                 <th className="th">Departemen</th>
                                 <th className="th">Check In</th>
                                 <th className="th">Check Out</th>
-                                <th className="th">Late</th>
-                                <th className="th">OT</th>
+                                <th className="th">Terlambat</th>
+                                <th className="th">Lebih Jam</th>
                                 <th className="th">Status</th>
                             </tr>
                         </thead>
