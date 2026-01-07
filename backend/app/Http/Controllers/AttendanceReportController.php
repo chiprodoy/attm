@@ -50,7 +50,7 @@ class AttendanceReportController extends Controller
             ->orderByDesc('checklog_time')
             ->paginate(20)
             ->withQueryString();
-
+        dd($logs);
         return Inertia::render('Report/AttendanceReport', [
             'logs' => $logs,
             'filters' => $filters,
