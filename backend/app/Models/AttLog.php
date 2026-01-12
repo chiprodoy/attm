@@ -35,6 +35,8 @@ class AttLog extends Model
     ];
 
     protected $casts = ['checklog_time' => 'date'];
+    protected $appends = ['has_mcu'];
+
     public function employee()
     {
         return $this->belongsTo(Employee::class,'USERID','USERID');
