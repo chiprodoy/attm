@@ -9,7 +9,7 @@ use Exception;
 
 class ImportFromAccess extends Command
 {
-    protected $signature = 'import:access
+    protected $signature = 'importt:access
                             {table : Nama tabel yang akan diimport}
                             {--file= : Path file .mdb (opsional, default pakai DSN)}
                             {--upsert= : Nama kolom primary key untuk updateOrInsert}';
