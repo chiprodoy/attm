@@ -113,6 +113,10 @@ class ImportAccessCommand extends Command
             ['USERID' => $data['USERID']],
             $data
         );
+        Employee::whereColumn('USERID', '!=', 'Badgenumber')
+            ->update([
+                'USERID' => DB::raw('Badgenumber')
+        ]);
     }
     private function insertUserOfRun($data){
         $data['STARTDATE'] = Carbon::createFromFormat('m/d/y H:i:s', $data['STARTDATE'])->format('Y-m-d H:i:s');
