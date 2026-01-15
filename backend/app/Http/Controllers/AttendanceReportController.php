@@ -71,7 +71,7 @@ class AttendanceReportController extends Controller
 {
     $query = AttLog::query()
         ->leftJoin(
-            DB::raw('attdb.userinfo as u'),
+            DB::raw('marine_att.userinfo as u'),
             'u.USERID',
             '=',
             'att_logs.USERID'
