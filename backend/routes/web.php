@@ -57,6 +57,9 @@ Route::middleware(['log.iclockrequest'])->post('/iclock/cdata', [iclockControlle
 
 Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::middleware(['log.iclockrequest'])->get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+// routing cetak laporan
+Route::get('/report/attendance/print', [AttendanceReportController::class, 'print'])
+    ->name('attendance.report.print');
 
 
 

@@ -66,4 +66,54 @@ class AttendanceReportController extends Controller
             'filters' => $filters,
         ]);
     }
+
+    public function print(Request $request)
+{
+    $query = AttLog::query()
+        ->leftJoin(
+            DB::raw('attdb.userinfo as u'),
+            'u.USERID',
+            '=',
+            'att_logs.USERID'
+        )
+        ->select(
+            'att_logs.*',
+            'u.NAME as employee_name'
+        );
+
+    // ===== FILTER (SAMA DENGAN INDEX) =====
+    if ($request->filled(['start_date', 'end_date'])) {
+        $query->whereBetween('checklog_time', [
+            $request->start_date,
+            $request->end_date
+        ]);
+    }
+
+    if ($request->filled('check_type')) {
+        $query->where('check_type', $request->check_type);
+    }
+
+    if ($request->filled('check_log_status')) {
+        $query->where('check_log_status', $request->check_log_status);
+    }
+
+    if ($request->filled('employee')) {
+        $query->where('u.NAME', 'like', '%' . $request->employee . '%');
+    }
+
+    if ($request->filled('department')) {
+        $query->where('departement_name', 'like', '%' . $request->department . '%');
+    }
+
+    $logs = $query
+        ->orderBy('checklog_time')
+        ->get();
+
+    return Inertia::render('Report/AttendanceReportPrint', [
+        'logs' => $logs,
+        'filters' => $request->all(),
+        'printedAt' => now()->format('d-m-Y H:i'),
+    ]);
+}
+
 }

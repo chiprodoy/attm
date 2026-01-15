@@ -19,6 +19,7 @@ export default function AttendanceReport({auth}) {
             { preserveState: true, replace: true }
         );
     };
+
     const formatDate = (value) => {
         if (!value) return '-';
         return new Date(value).toLocaleDateString('id-ID', {
@@ -32,7 +33,14 @@ export default function AttendanceReport({auth}) {
         if (!value) return '-';
         return value.substring(11, 19); // HH:mm:ss
     };
+
     const safe = (val, cb) => (val ? cb(val) : '-');
+
+    const handlePrint = () => {
+        router.get(route('attendance.report.print'), filters, {
+            preserveState: true,
+        });
+    };
 
     return (
                 <AuthenticatedLayout
