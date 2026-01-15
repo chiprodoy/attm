@@ -49,7 +49,7 @@ export default function AttendanceReportPrint({ logs, filters, printedAt }) {
                   : "-"}
               </td>
               <td className="border p-1 text-center">
-                {row.check_log_status}
+                {row.check_log_status ? 'Hadir' : 'Tidak'}
               </td>
             </tr>
           ))}
