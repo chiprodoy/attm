@@ -41,4 +41,9 @@
     page-break-inside: avoid;
     page-break-after: auto;
   }
+  .late-row {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    font-weight: bold;
+  }
 }

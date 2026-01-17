@@ -41,6 +41,9 @@ export default function AttendanceReport({auth}) {
             preserveState: true,
         });
     };
+    const lateClass = row.late <= 0
+    ? "bg-red-50 text-red-700 font-semibold"
+    : "";
 
     return (
                 <AuthenticatedLayout
@@ -141,7 +144,7 @@ export default function AttendanceReport({auth}) {
 
                         <tbody className="divide-y">
                             {logs.data.map((row) => (
-                                <tr key={row.id} className="hover:bg-gray-50">
+                                <tr key={row.id} className="hover:bg-gray-50 {lateClass}">
                                     <td className="td">{safe(row.checklog_time, formatDate)}</td>
                                     <td className="td">{row.employee_name || '-'}</td>
                                     <td className="td">{row.departement_name}</td>

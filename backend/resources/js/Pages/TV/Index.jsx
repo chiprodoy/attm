@@ -109,7 +109,7 @@ export default function DashboardTV() {
         <div className='col-md-6'>
             <h2 className="text-yellow-400 text-xl font-semibold mb-2">PEGAWAI TERLAMBAT</h2>
             <table className="w-full text-sm">
-                <thead className="text-left bg-[#0F2A4B] text-white">
+                <thead className="text-left bg-[#0F2A4B] text-red-600 animate-pulse">
                     <tr>
                     <th className="p-2">No.</th>
                     <th className="p-2">NIP</th>
