@@ -31,7 +31,7 @@ export default function AttendanceReportPrint({ logs, filters, printedAt }) {
         </thead>
         <tbody>
           {logs.map((row, i) => (
-            <tr key={row.id}  className={row.late <=0 ? "late-row" : ""}>
+            <tr key={row.id}  className={row.late < 0 ? "late-row" : ""}>
               <td className="border p-1 text-center">{i + 1}</td>
               <td className="border p-1">{row.employee_name}</td>
               <td className="border p-1">{row.departement_name}</td>
