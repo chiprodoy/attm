@@ -142,7 +142,7 @@ export default function AttendanceReport({auth}) {
 
                         <tbody className="divide-y">
                             {logs.data.map((row) => {
-                                    const lateClass = row.late <= 0
+                                    const lateClass = row.late < 0
                                     ? "bg-red-50 text-red-700 font-semibold"
                                     : "";
 
