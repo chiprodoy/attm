@@ -144,7 +144,7 @@ export default function AttendanceReport({auth}) {
 
                         <tbody className="divide-y">
                             {logs.data.map((row) => (
-                                <tr key={row.id} className="hover:bg-gray-50 {lateClass}">
+                                <tr key={row.id} className={lateClass}>
                                     <td className="td">{safe(row.checklog_time, formatDate)}</td>
                                     <td className="td">{row.employee_name || '-'}</td>
                                     <td className="td">{row.departement_name}</td>
