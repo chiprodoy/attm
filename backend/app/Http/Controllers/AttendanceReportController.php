@@ -28,7 +28,7 @@ class AttendanceReportController extends Controller
                 ->join(DB::raw('marine_att.userinfo as u'), 'u.USERID', '=', 'employee_check_log_statuses.employee_USERID')
                 ->leftJoin(DB::raw('att_logs'), function ($join) {
                     $join->on('att_logs.USERID', '=', 'employee_check_log_statuses.employee_USERID')
-                         ->on(DB::raw('DATE(employee_check_log_statuses.checklog_date)'),' =','att_logs.checklog_time');
+                         ->on(DB::raw('DATE(employee_check_log_statuses.checklog_date) = att_logs.checklog_time'));
                 })->select(
                     'att_logs.*',
                     'u.Name as employee_name',   // ← pastikan kolom ini benar
