@@ -83,16 +83,16 @@ class AttendanceReportController extends Controller
 
     public function print(Request $request)
     {
-      $query = DB::table('employee_check_log_statuses')
+        $query = DB::table('employee_check_log_statuses')
                 ->join(DB::raw('marine_att.userinfo as u'), 'u.USERID', '=', 'employee_check_log_statuses.employee_USERID')
                 ->leftJoin(DB::raw('att_logs'), function ($join) {
                     $join->on('att_logs.USERID', '=', 'employee_check_log_statuses.employee_USERID')
-                         ->on(DB::raw('DATE(employee_check_log_statuses.checklog_date) = att_logs.checklog_time'));
-        })->select(
+                         ->whereRaw('DATE(employee_check_log_statuses.checklog_date) = att_logs.checklog_time');
+                })->select(
                     'att_logs.*',
                     'u.Name as employee_name',   // ← pastikan kolom ini benar
                     'u.Badgenumber'
-            );
+                );
 
     // ===== FILTER (SAMA DENGAN INDEX) =====
     if ($request->filled(['start_date', 'end_date'])) {
